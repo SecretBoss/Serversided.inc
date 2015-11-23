@@ -376,7 +376,8 @@ enum e_LAST_SHOT
 	Float:shotOrigin[3],
 	Float:shotHit[3],
 	Float:shotLength,
- 	bool:shotValid
+ 	bool:shotValid,
+ 	bool:shotReturn
 }
 static pLastShot[MAX_PLAYERS][e_LAST_SHOT];
 static pLastShotTicks[MAX_PLAYERS][10];
@@ -1459,11 +1460,25 @@ public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
 {
 	// Check for teams
 	if (damagedid != INVALID_PLAYER_ID)
-		{
+	{
+		// Check for OnPlayerWeaponShot, if it returned 0, that means no damage is given
+	    if (pLastShot[playerid][shotHitid] == damagedid)
+	    {
+	        if (! pLastShot[playerid][shotReturn])
+	        {
+	            pLastShot[playerid][shotReturn] = true;
+	            
+				#if defined SS_OnPlayerGiveDamage
+					return SS_OnPlayerGiveDamage(playerid, damagedid, amount, weaponid, bodypart);
+				#else
+					return 1;
+				#endif
+	        }
+	    }
 		if (pTeam[playerid] != NO_TEAM && pTeam[damagedid] != NO_TEAM && pTeam[playerid] == pTeam[damagedid])
 		{
 		    #if defined SS_OnPlayerGiveDamage
-				return SS_OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart);
+				return SS_OnPlayerGiveDamage(playerid, damagedid, amount, weaponid, bodypart);
 			#else
 				return 1;
 			#endif
@@ -1556,7 +1571,7 @@ public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
 	}
 
 	#if defined SS_OnPlayerGiveDamage
-		return SS_OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart);
+		return SS_OnPlayerGiveDamage(playerid, damagedid, amount, weaponid, bodypart);
 	#else
 		return 1;
 	#endif
@@ -1605,13 +1620,27 @@ public OnPlayerDeath(playerid, killerid, reason)
 
 public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
 {
-	// Check for teams
 	if (issuerid != INVALID_PLAYER_ID)
 	{
+		// Check for OnPlayerWeaponShot, if it returned 0, that means no damage is given
+	    if (pLastShot[issuerid][shotHitid] == playerid)
+	    {
+	        if (! pLastShot[issuerid][shotReturn])
+	        {
+	            pLastShot[issuerid][shotReturn] = true;
+	            
+				#if defined SS_OnPlayerTakeDamage
+					return SS_OnPlayerTakeDamage(playerid, issuerid, amount, weaponid, bodypart);
+				#else
+					return 1;
+				#endif
+	        }
+	    }
+		// Check for same teams
 		if (pTeam[playerid] != NO_TEAM && pTeam[issuerid] != NO_TEAM && pTeam[playerid] == pTeam[issuerid])
 		{
 			#if defined SS_OnPlayerTakeDamage
-				return SS_OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart);
+				return SS_OnPlayerTakeDamage(playerid, issuerid, amount, weaponid, bodypart);
 			#else
 				return 1;
 			#endif
@@ -1638,7 +1667,7 @@ public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
     }
 
 	#if defined SS_OnPlayerTakeDamage
-		return SS_OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart);
+		return SS_OnPlayerTakeDamage(playerid, issuerid, amount, weaponid, bodypart);
 	#else
 		return 1;
 	#endif
@@ -1752,6 +1781,9 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY
 	pLastShot[playerid][shotHit][2] = hit[2];
 	pLastShot[playerid][shotLength] = length;
 	pLastShot[playerid][shotHits] = 0;
+	#if defined SS_OnPlayerWeaponShot
+		pLastShot[playerid][shotReturn] = bool:SS_OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY, Float:fZ);
+	#endif
 
 	// Check for rapid fire / Bullet flood
 	new multiple_weapons;
@@ -1832,9 +1864,10 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY
 			}
 		}
 	}
+	
 
 	#if defined SS_OnPlayerWeaponShot
-		return SS_OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY, Float:fZ);
+		return SS_OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, fX, fY, fZ);
 	#else
 		return 1;
 	#endif
@@ -1964,7 +1997,7 @@ forward OnPlayerUseVendingMachine(playerid);
 public  OnPlayerUseVendingMachine(playerid)
 {
 	SetPlayerHealth(playerid, pHealth[playerid]);
-	
+
 	ResetPlayerMoney(playerid);
 	GivePlayerMoney(playerid, pMoney[playerid]);
 
@@ -1987,7 +2020,7 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 				case WEAPON_BOMB, WEAPON_SATCHEL:
 				{
 					pLastExplosive[playerid] = WEAPON_SATCHEL;
-					
+
 	  				new slot = SS_GetWeaponSlot(weaponid);
 
 					pWeaponData[playerid][slot][1]--;

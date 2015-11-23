@@ -1783,6 +1783,8 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY
 	pLastShot[playerid][shotHits] = 0;
 	#if defined SS_OnPlayerWeaponShot
 		pLastShot[playerid][shotReturn] = bool:SS_OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, fX, fY, fZ);
+	#else
+		pLastShot[playerid][shotReturn] = true;
 	#endif
 
 	// Check for rapid fire / Bullet flood

@@ -1476,7 +1476,7 @@ public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
 				#endif
 	        }
 	    }
-		if (pTeam[playerid] != NO_TEAM && pTeam[damagedid] != NO_TEAM && pTeam[playerid] == pTeam[damagedid])
+		if ((pTeam[playerid] != NO_TEAM || pTeam[damagedid] != NO_TEAM) && pTeam[playerid] == pTeam[damagedid])
 		{
 		    #if defined SS_OnPlayerGiveDamage
 				return SS_OnPlayerGiveDamage(playerid, damagedid, amount, weaponid, bodypart);
@@ -1596,6 +1596,9 @@ public  SS_OnPlayerKnifed(playerid, killerid)
 
 public OnPlayerDeath(playerid, killerid, reason)
 {
+	pHealth[playerid] = 0.0;
+	pArmour[playerid] = 0.0;
+	
 	// Playerid was knifed
 	if (pKnifed[playerid] != INVALID_PLAYER_ID)
 	{
@@ -1638,7 +1641,7 @@ public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
 	        }
 	    }
 		// Check for same teams
-		if (pTeam[playerid] != NO_TEAM && pTeam[issuerid] != NO_TEAM && pTeam[playerid] == pTeam[issuerid])
+		if if ((pTeam[playerid] != NO_TEAM || pTeam[issuerid] != NO_TEAM) && pTeam[playerid] == pTeam[issuerid])
 		{
 			#if defined SS_OnPlayerTakeDamage
 				return SS_OnPlayerTakeDamage(playerid, issuerid, amount, weaponid, bodypart);

@@ -898,6 +898,7 @@ public OnPlayerConnect(playerid)
 	pLastExplosive[playerid] = 0;
 
 	pClass[playerid] = 0;
+	pTeam[playerid] = NO_TEAM;
 
 	pLastShotIdx[playerid] = 0;
 	pLastShot[playerid][shotTick] = 0;
@@ -1006,7 +1007,7 @@ public OnPlayerSpawn(playerid)
 	forward SS_OnPlayerSpawn(playerid);
 #endif
 
-stock static SS_AverageShootRate(playerid, shots, &multiple_weapons = 0)
+stock static SS_AverageShootRate(playerid, shots, &multiple_weapons = 0)// Credits to Slice
 {
 	new total = 0;
 	new idx = pLastShotIdx[playerid];
@@ -1044,7 +1045,7 @@ stock static SS_AverageShootRate(playerid, shots, &multiple_weapons = 0)
 	return total / (shots - 1);
 }
 
-stock static SS_AverageHitRate(playerid, hits, &multiple_weapons = 0)
+stock static SS_AverageHitRate(playerid, hits, &multiple_weapons = 0)// Credits to Slice
 {
 	new total = 0;
 	new idx = pLastHitIdx[playerid];
@@ -2138,38 +2139,35 @@ stock SS_DestroyPickup(pickupid)
 public OnPlayerPickUpPickup(playerid, pickupid)
 {
 	// Custom static pickups
-	for (new i; i < MAX_PICKUPS; i++)
-	{
-	    switch (gPickupModel[i])
+	switch (gPickupModel[pickupid])
+ 	{
+  		case 1240 :
 	    {
-	        case 1240 :
+     		if (pHealth[playerid] < 100.0)
 	        {
-	            if (pHealth[playerid] < 100.0)
-	            {
-	                SetPlayerHealth(playerid, 100.0);
-	            }
-
-	            return 1;
+	         	SetPlayerHealth(playerid, 100.0);
 	        }
-	        case 1242 :
-	        {
-	            if (pArmour[playerid] < 100.0)
-	            {
-	                SetPlayerArmour(playerid, 100.0);
-	            }
 
-	            return 1;
-	        }
-	        case 321..369, 371, 372:
-	        {
-	            new weapon = SS_GetModelWeaponID(gPickupModel[i]);
-	            if (weapon != -1)
-	            {
-	                GivePlayerWeapon(playerid, weapon, 100);
-	            }
+	        return 1;
+		}
+	    case 1242 :
+	    {
+     		if (pArmour[playerid] < 100.0)
+       		{
+         		SetPlayerArmour(playerid, 100.0);
+           	}
 
-	            return 1;
-	        }
+			return 1;
+   		}
+     	case 321..369, 371, 372:
+      	{
+       		new weapon = SS_GetModelWeaponID(gPickupModel[pickupid]);
+         	if (weapon != -1)
+          	{
+           		GivePlayerWeapon(playerid, weapon, 100);
+           	}
+
+			return 1;
 	    }
 	}
 

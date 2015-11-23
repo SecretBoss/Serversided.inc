@@ -1,3 +1,8 @@
+#if defined _serversided_included
+	#endinput
+#endif
+#define _serversided_included
+
 /*
 *
 * ===============
@@ -13,11 +18,6 @@
 * Slice - Weapons data array, SS_ProcessDamage and Average weapon functions
 *
 */
-
-#if defined _serversided_included
-	#endinput
-#endif
-#define _serversided_included
 
 #define WEAPON_UNARMED 0
 #define WEAPON_VEHICLE_M4 19

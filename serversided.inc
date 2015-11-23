@@ -945,7 +945,7 @@ public OnPlayerRequestClass(playerid, classid)
 public OnPlayerSpawn(playerid)
 {
     pKnifed[playerid] = INVALID_PLAYER_ID;
-    pLastShot[playerid][shotHitid] = INVALID_PLAYER_ID;
+    pLastShot[playerid][shotHitid] = -1;
 
 	// Adjusting weapons according to class and spawninfo
     new weapon, ammo;
@@ -1463,7 +1463,7 @@ public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
 	if (damagedid != INVALID_PLAYER_ID)
 	{
 		// Check for OnPlayerWeaponShot, if it returned 0, that means no damage is given
-	    if (pLastShot[playerid][shotHitid] == damagedid)
+	    if (pLastShot[issuerid][shotHittype] == BULLET_HIT_TYPE_PLAYER && pLastShot[playerid][shotHitid] == damagedid)
 	    {
 	        if (! pLastShot[playerid][shotReturn])
 	        {
@@ -1624,7 +1624,7 @@ public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
 	if (issuerid != INVALID_PLAYER_ID)
 	{
 		// Check for OnPlayerWeaponShot, if it returned 0, that means no damage is given
-	    if (pLastShot[issuerid][shotHitid] == playerid)
+	    if (pLastShot[issuerid][shotHittype] == BULLET_HIT_TYPE_PLAYER && pLastShot[issuerid][shotHitid] == playerid)
 	    {
 	        if (! pLastShot[issuerid][shotReturn])
 	        {

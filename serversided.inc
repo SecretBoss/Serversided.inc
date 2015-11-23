@@ -450,6 +450,10 @@ stock SS_GetPlayerTeam(playerid)
 forward __SetPlayerHealth(playerid, Float:health);
 public 	__SetPlayerHealth(playerid, Float:health)
 {
+	if (health < 0.0)
+	{
+		health = 0.0;
+	}
     pHealth[playerid] = health;
 }
 
@@ -501,6 +505,10 @@ stock SS_GetPlayerHealth(playerid, &Float:health)
 forward __SetPlayerArmour(playerid, Float:armour);
 public 	__SetPlayerArmour(playerid, Float:armour)
 {
+	if (armour < 0.0)
+	{
+		armour = 0.0;
+	}
     pArmour[playerid] = armour;
 }
 

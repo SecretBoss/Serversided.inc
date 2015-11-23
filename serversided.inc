@@ -1463,7 +1463,7 @@ public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
 	if (damagedid != INVALID_PLAYER_ID)
 	{
 		// Check for OnPlayerWeaponShot, if it returned 0, that means no damage is given
-	    if (pLastShot[issuerid][shotHittype] == BULLET_HIT_TYPE_PLAYER && pLastShot[playerid][shotHitid] == damagedid)
+	    if (pLastShot[playerid][shotHittype] == BULLET_HIT_TYPE_PLAYER && pLastShot[playerid][shotHitid] == damagedid)
 	    {
 	        if (! pLastShot[playerid][shotReturn])
 	        {

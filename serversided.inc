@@ -945,6 +945,7 @@ public OnPlayerRequestClass(playerid, classid)
 public OnPlayerSpawn(playerid)
 {
     pKnifed[playerid] = INVALID_PLAYER_ID;
+    pLastShot[playerid][shotHitid] = INVALID_PLAYER_ID;
 
 	// Adjusting weapons according to class and spawninfo
     new weapon, ammo;

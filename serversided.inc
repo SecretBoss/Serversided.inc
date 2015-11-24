@@ -399,6 +399,8 @@ static SS_LastExplosive[MAX_PLAYERS];
 
 static SS_Knifed[MAX_PLAYERS];
 
+static bool:SS_Update[MAX_PLAYERS];
+
 forward __SetPlayerTeam(playerid, teamid);
 public 	__SetPlayerTeam(playerid, teamid)
 {
@@ -908,6 +910,12 @@ public OnPlayerConnect(playerid)
 
 	SS_LastHitIdx[playerid] = 0;
 
+	if (GetPVarType(playerid, "SS_OnPlayerUpdate") == PLAYER_VARTYPE_NONE)
+	{
+		SS_Update[playerid] = true;
+		SetPVarInt(playerid, "SS_OnPlayerUpdate", 1);
+	}
+
 	#if defined SS_OnPlayerConnect
 		return SS_OnPlayerConnect(playerid);
 	#else
@@ -922,6 +930,27 @@ public OnPlayerConnect(playerid)
 #define OnPlayerConnect SS_OnPlayerConnect
 #if defined SS_OnPlayerConnect
 	forward SS_OnPlayerConnect(playerid);
+#endif
+
+public OnPlayerDisconnect(playerid, reason)
+{
+	SS_Update[playerid] = false;
+	DeletePVar(playerid, "SS_OnPlayerUpdate");
+
+	#if defined SS_OnPlayerDisconnect
+		return SS_OnPlayerDisconnect(playerid);
+	#else
+		return 1;
+	#endif
+}
+#if defined _ALS_OnPlayerDisconnect
+    #undef OnPlayerDisconnect
+#else
+    #define _ALS_OnPlayerDisconnect
+#endif
+#define OnPlayerDisconnect SS_OnPlayerDisconnect
+#if defined SS_OnPlayerDisconnect
+	forward SS_OnPlayerDisconnect(playerid);
 #endif
 
 public OnPlayerRequestClass(playerid, classid)
@@ -1597,7 +1626,7 @@ public  SS_OnPlayerKnifed(playerid, killerid)
 {
 	SetPlayerHealth(playerid, 0.0);
 	SS_Knifed[playerid] = killerid;
-	
+
 	DeletePVar(playerid, "SS_Knifed");
 }
 
@@ -1897,92 +1926,103 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY
 
 public OnPlayerUpdate(playerid)
 {
-	// Check for health hack
-	new Float:health;
-	OLD_GetPlayerHealth(playerid, health);
-	if (_:health >= 100 && _:SS_Health[playerid] < 100 || _:health < 100 && _:SS_Health[playerid] >= 100)
+	if (SS_Update[playerid])
 	{
-	    return OLD_SetPlayerHealth(playerid, SS_Health[playerid]);
-	}
-
-	// Check for armour hack
-	new Float:armour;
-	OLD_GetPlayerArmour(playerid, armour);
-	if (_:armour >= 100 && _:SS_Armour[playerid] < 100 || _:armour < 100 && _:SS_Armour[playerid] >= 100)
-	{
-	    return OLD_SetPlayerArmour(playerid, SS_Armour[playerid]);
-	}
-
-	// Check for money hack
-	if (OLD_GetPlayerMoney(playerid) != SS_Money[playerid])
-	{
-	    OLD_ResetPlayerMoney(playerid);
-		return OLD_GivePlayerMoney(playerid, SS_Money[playerid]);
-	}
-
-	// Check for score hack
-	if (OLD_GetPlayerScore(playerid) != SS_Score[playerid])
-	{
-		return OLD_SetPlayerScore(playerid, SS_Score[playerid]);
-	}
-
-	// Check for weapon hack
-	new weapon = GetPlayerWeapon(playerid);
-	new slot = SS_GetWeaponSlot(weapon);
-	if (SS_WeaponData[playerid][slot][0] != weapon)
-	{
-		OLD_SetPlayerAmmo(playerid, weapon, 0);
-		OLD_GivePlayerWeapon(playerid, SS_WeaponData[playerid][slot][0], SS_WeaponData[playerid][slot][1]);
-	}
-	else
-	{
-	    switch (weapon)
-	    {
-			case WEAPON_GRENADE..WEAPON_MOLTOV, WEAPON_COLT45..WEAPON_SNIPER, WEAPON_ROCKETLAUNCHER, WEAPON_HEATSEEKER, WEAPON_MINIGUN, WEAPON_CAMERA, WEAPON_SATCHEL:
-	    	{
-				if (SS_WeaponData[playerid][slot][1] != OLD_GetPlayerAmmo(playerid))
-				{
-					OLD_SetPlayerAmmo(playerid, weapon, SS_WeaponData[playerid][slot][1]);
-				}
-			}
-			default:
-			{
-				if (OLD_GetPlayerAmmo(playerid) > SS_WeaponData[playerid][slot][1])
-				{
-					OLD_SetPlayerAmmo(playerid, weapon, SS_WeaponData[playerid][slot][1]);
-				}
-			}
-		}
-	}
-
-	// Detecting vending machine
-    if (GetPlayerState(playerid) == PLAYER_STATE_ONFOOT)
-	{
-		if (GetPlayerAnimationIndex(playerid) == 1660 && GetPVarType(playerid, "SS_Vending") == PLAYER_VARTYPE_NONE)
+		// Check for health hack
+		new Float:health;
+		OLD_GetPlayerHealth(playerid, health);
+		if (_:health > 100 && _:SS_Health[playerid] <= 100)
 		{
-		    new interiorid = GetPlayerInterior(playerid);
-			for (new i, j = sizeof(SS_VendingMachine); i < j; i++)
-			{
-			    if (interiorid != SS_VendingMachine[i][SS_vmInteriorid])
-			    {
-			        continue;
-			    }
+		    OLD_SetPlayerHealth(playerid, SS_Health[playerid]);
+		}
+		else if (_:health <= 100 && _:SS_Health[playerid] > 100)
+		{
+		    OLD_SetPlayerHealth(playerid, 150.0);
+		}
 
-				if (! IsPlayerInRangeOfPoint(playerid, 1.0, SS_VendingMachine[i][SS_vmFrontX], SS_VendingMachine[i][SS_vmFrontY], SS_VendingMachine[i][SS_vmZHeight]))
-				{
-					continue;
+		// Check for armour hack
+		new Float:armour;
+		OLD_GetPlayerArmour(playerid, armour);
+		if (_:armour > 100 && _:SS_Armour[playerid] <= 100)
+		{
+		    OLD_SetPlayerArmour(playerid, SS_Armour[playerid]);
+		}
+		else if (_:armour <= 100 && _:SS_Armour[playerid] > 100)
+		{
+		    OLD_SetPlayerArmour(playerid, 150.0);
+		}
+
+		// Check for money hack
+		if (OLD_GetPlayerMoney(playerid) != SS_Money[playerid])
+		{
+		    OLD_ResetPlayerMoney(playerid);
+			OLD_GivePlayerMoney(playerid, SS_Money[playerid]);
+		}
+
+		// Check for score hack
+		if (OLD_GetPlayerScore(playerid) != SS_Score[playerid])
+		{
+			OLD_SetPlayerScore(playerid, SS_Score[playerid]);
+		}
+
+		// Check for weapon hack
+		new weapon = GetPlayerWeapon(playerid);
+		new slot = SS_GetWeaponSlot(weapon);
+		if (SS_WeaponData[playerid][slot][0] != weapon)
+		{
+			OLD_SetPlayerAmmo(playerid, weapon, 0);
+			OLD_GivePlayerWeapon(playerid, SS_WeaponData[playerid][slot][0], SS_WeaponData[playerid][slot][1]);
+		}
+		else
+		{
+		    switch (weapon)
+		    {
+				case WEAPON_GRENADE..WEAPON_MOLTOV, WEAPON_COLT45..WEAPON_SNIPER, WEAPON_ROCKETLAUNCHER, WEAPON_HEATSEEKER, WEAPON_MINIGUN, WEAPON_CAMERA, WEAPON_SATCHEL:
+		    	{
+					if (SS_WeaponData[playerid][slot][1] != OLD_GetPlayerAmmo(playerid))
+					{
+						OLD_SetPlayerAmmo(playerid, weapon, SS_WeaponData[playerid][slot][1]);
+					}
 				}
-				
-				printf("DEBUG: OnPlayerUpdate");
+				default:
+				{
+					if (OLD_GetPlayerAmmo(playerid) > SS_WeaponData[playerid][slot][1])
+					{
+						OLD_SetPlayerAmmo(playerid, weapon, SS_WeaponData[playerid][slot][1]);
+					}
+				}
+			}
+		}
 
-				SetPVarInt(playerid, "SS_Vending", SetTimerEx("OnPlayerUseVendingMachine", 1750, false, "i", playerid));
-				GivePlayerMoney(playerid, -1);
-				
-				break;
+		// Detecting vending machine
+	    if (GetPlayerState(playerid) == PLAYER_STATE_ONFOOT)
+		{
+			if (GetPlayerAnimationIndex(playerid) == 1660 && GetPVarType(playerid, "SS_Vending") == PLAYER_VARTYPE_NONE)
+			{
+			    new interiorid = GetPlayerInterior(playerid);
+				for (new i, j = sizeof(SS_VendingMachine); i < j; i++)
+				{
+				    if (interiorid != SS_VendingMachine[i][SS_vmInteriorid])
+				    {
+				        continue;
+				    }
+
+					if (! IsPlayerInRangeOfPoint(playerid, 1.0, SS_VendingMachine[i][SS_vmFrontX], SS_VendingMachine[i][SS_vmFrontY], SS_VendingMachine[i][SS_vmZHeight]))
+					{
+						continue;
+					}
+
+					printf("DEBUG: OnPlayerUpdate");
+
+					SetPVarInt(playerid, "SS_Vending", SetTimerEx("OnPlayerUseVendingMachine", 1750, false, "i", playerid));
+					GivePlayerMoney(playerid, -1);
+
+					break;
+				}
 			}
 		}
 	}
-
+	
 	#if defined SS_OnPlayerUpdate
 		return SS_OnPlayerUpdate(playerid);
 	#else
@@ -2011,7 +2051,7 @@ public  OnPlayerUseVendingMachine(playerid)
 		new Float:amount = 100.0 - SS_Health[playerid];
 		SetPlayerHealth(playerid, SS_Health[playerid] + amount);
   	}
-  	
+
 	DeletePVar(playerid, "SS_Vending");
 }
 

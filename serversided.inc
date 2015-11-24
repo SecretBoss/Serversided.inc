@@ -8,7 +8,7 @@
 * ===============
 * LIBRARY
 * ===============
-* Server sieded include (serversided.inc) - v1.1 [BETA]
+* Server sieded include (serversided.inc) - v1.2 [BETA]
 * Makes all the client side features to server scripted parts (covers Health, Armour, Money, Score, Weapon, Ammo and Vehicle Health).
 *
 * ===============
@@ -973,17 +973,12 @@ public OnPlayerRequestClass(playerid, classid)
 	forward SS_OnPlayerRequestClass(playerid, classid);
 #endif
 
-public OnPlayerRequestSpawn(playerid)
+forward __UpdateWeapons(playerid, class_weapons);
+public 	__UpdateWeapons(playerid, class_weapons)
 {
-	new ret = 1;
-    #if defined SS_OnPlayerRequestSpawn
-		ret = SS_OnPlayerRequestSpawn(playerid);
-	#endif
-	
-	// Adjusting weapons according to SS_class and SS_spawninfo
-    if (ret)
+	if (class_weapons)
 	{
-		new weapon, ammo;
+	    new weapon, ammo;
 		for (new i; i < 13; i++)
 		{
 			OLD_GetPlayerWeaponData(playerid, i, weapon, ammo);
@@ -991,31 +986,86 @@ public OnPlayerRequestSpawn(playerid)
 			{
 				if (SS_ClassData[SS_Classid[playerid]][SS_classWeapon1][0] == weapon || SS_ClassData[playerid][SS_classWeapon1][1] != ammo)
 				{
-				    CallRemoteFunction("__SetPlayerWeapon", "iiii", playerid, i, weapon, SS_ClassData[SS_Classid[playerid]][SS_classWeapon1][1]);
+				    SS_WeaponData[playerid][i][0] = weapon;
+    				SS_WeaponData[playerid][i][1] = SS_ClassData[SS_Classid[playerid]][SS_classWeapon1][1];
 				    continue;
 				}
 				else if (SS_ClassData[SS_Classid[playerid]][SS_classWeapon2][1] == weapon || SS_ClassData[playerid][SS_classWeapon2][1] != ammo)
 				{
-				    CallRemoteFunction("__SetPlayerWeapon", "iiii", playerid, i, weapon, SS_ClassData[SS_Classid[playerid]][SS_classWeapon2][1]);
+				    SS_WeaponData[playerid][i][0] = weapon;
+    				SS_WeaponData[playerid][i][1] = SS_ClassData[SS_Classid[playerid]][SS_classWeapon2][1];
 				    continue;
 				}
 				else if (SS_ClassData[SS_Classid[playerid]][SS_classWeapon3][1] == weapon || SS_ClassData[playerid][SS_classWeapon3][1] != ammo)
 				{
-				    CallRemoteFunction("__SetPlayerWeapon", "iiii", playerid, i, weapon, SS_ClassData[SS_Classid[playerid]][SS_classWeapon3][1]);
+				    SS_WeaponData[playerid][i][0] = weapon;
+    				SS_WeaponData[playerid][i][1] = SS_ClassData[SS_Classid[playerid]][SS_classWeapon3][1];
 				    continue;
 				}
 				else
 				{
 				    OLD_SetPlayerAmmo(playerid, weapon, 0);
-				    CallRemoteFunction("__SetPlayerWeapon", "iiii", playerid, i, 0, 0);
+				    SS_WeaponData[playerid][i][0] = 0;
+    				SS_WeaponData[playerid][i][1] = 0;
 				    continue;
 				}
 			}
 		}
+	}
+	else
+	{
+		new weapon, ammo;
+		for (new i; i < 13; i++)
+		{
+			OLD_GetPlayerWeaponData(playerid, i, weapon, ammo);
+			if (weapon && ammo)
+			{
+				if (SS_SpawnData[playerid][SS_spawnWeapon1][0] == weapon || SS_SpawnData[playerid][SS_spawnWeapon1][1] != ammo)
+				{
+				    SS_WeaponData[playerid][i][0] = weapon;
+    				SS_WeaponData[playerid][i][1] = SS_SpawnData[playerid][SS_spawnWeapon1][1];
+				    continue;
+				}
+				else if (SS_SpawnData[playerid][SS_spawnWeapon2][1] == weapon || SS_SpawnData[playerid][SS_spawnWeapon2][1] != ammo)
+				{
+				    SS_WeaponData[playerid][i][0] = weapon;
+    				SS_WeaponData[playerid][i][1] = SS_SpawnData[playerid][SS_spawnWeapon2][1];
+				    continue;
+				}
+				else if (SS_SpawnData[playerid][SS_spawnWeapon3][1] == weapon || SS_SpawnData[playerid][SS_spawnWeapon3][1] != ammo)
+				{
+				    SS_WeaponData[playerid][i][0] = weapon;
+    				SS_WeaponData[playerid][i][1] = SS_SpawnData[playerid][SS_spawnWeapon3][1];
+				    continue;
+				}
+				else
+				{
+				    OLD_SetPlayerAmmo(playerid, weapon, 0);
+				    SS_WeaponData[playerid][i][0] = 0;
+    				SS_WeaponData[playerid][i][1] = 0;
+				    continue;
+				}
+			}
+		}
+	}
+}
+
+public OnPlayerRequestSpawn(playerid)
+{
+	new ret = 1;
+    #if defined SS_OnPlayerRequestSpawn
+		ret = SS_OnPlayerRequestSpawn(playerid);
+	#endif
+
+    if (ret)
+	{
+		// Adjusting weapons according to classinfo
+	    CallRemoteFunction("__UpdateWeapons", "ii", playerid, 1);
+		
 		// Set class info team
 		SetPlayerTeam(playerid, SS_ClassData[SS_Classid[playerid]][SS_classTeam]);
 	}
-	
+
 	return ret;
 }
 #if defined _ALS_OnPlayerRequestSpawn
@@ -1034,35 +1084,8 @@ public OnPlayerSpawn(playerid)
     SS_LastShot[playerid][SS_shotHitid] = -1;
 
 	// Adjusting weapons according to spawninfo
-    new weapon, ammo;
-	for (new i; i < 13; i++)
-	{
-		OLD_GetPlayerWeaponData(playerid, i, weapon, ammo);
-		if (weapon && ammo)
-		{
-			if (SS_SpawnData[playerid][SS_spawnWeapon1][0] == weapon || SS_SpawnData[playerid][SS_spawnWeapon1][1] != ammo)
-			{
-			    CallRemoteFunction("__SetPlayerWeapon", "iiii", playerid, i, weapon, SS_SpawnData[playerid][SS_spawnWeapon1][1]);
-			    continue;
-			}
-			else if (SS_SpawnData[playerid][SS_spawnWeapon2][1] == weapon || SS_SpawnData[playerid][SS_spawnWeapon2][1] != ammo)
-			{
-			    CallRemoteFunction("__SetPlayerWeapon", "iiii", playerid, i, weapon, SS_SpawnData[playerid][SS_spawnWeapon2][1]);
-			    continue;
-			}
-			else if (SS_SpawnData[playerid][SS_spawnWeapon3][1] == weapon || SS_SpawnData[playerid][SS_spawnWeapon3][1] != ammo)
-			{
-			    CallRemoteFunction("__SetPlayerWeapon", "iiii", playerid, i, weapon, SS_SpawnData[playerid][SS_spawnWeapon3][1]);
-			    continue;
-			}
-			else
-			{
-			    OLD_SetPlayerAmmo(playerid, weapon, 0);
-			    CallRemoteFunction("__SetPlayerWeapon", "iiii", playerid, i, 0, 0);
-			    continue;
-			}
-		}
-	}
+ 	CallRemoteFunction("__UpdateWeapons", "ii", playerid, 0);
+    
 	// Set spawn info team
 	SetPlayerTeam(playerid, SS_SpawnData[playerid][SS_spawnTeam]);
 
@@ -2036,7 +2059,7 @@ public OnPlayerUpdate(playerid)
 		// Detecting vending machine
 	    if (GetPlayerState(playerid) == PLAYER_STATE_ONFOOT)
 		{
-			if (GetPlayerAnimationIndex(playerid) == 1660 && GetPVarType(playerid, "SS_Vending") == PLAYER_VARTYPE_NONE)
+			if (GetPlayerAnimationIndex(playerid) == 1660 && SS_Money[playerid] > 0 && GetPVarType(playerid, "SS_Vending") == PLAYER_VARTYPE_NONE)
 			{
 			    new interiorid = GetPlayerInterior(playerid);
 				for (new i, j = sizeof(SS_VendingMachine); i < j; i++)
@@ -2051,8 +2074,6 @@ public OnPlayerUpdate(playerid)
 						continue;
 					}
 
-					printf("DEBUG: OnPlayerUpdate");
-
 					SetPVarInt(playerid, "SS_Vending", SetTimerEx("OnPlayerUseVendingMachine", 1750, false, "i", playerid));
 					GivePlayerMoney(playerid, -1);
 
@@ -2061,7 +2082,7 @@ public OnPlayerUpdate(playerid)
 			}
 		}
 	}
-	
+
 	#if defined SS_OnPlayerUpdate
 		return SS_OnPlayerUpdate(playerid);
 	#else
@@ -2085,7 +2106,7 @@ public  OnPlayerUseVendingMachine(playerid)
  	{
 		SetPlayerHealth(playerid, SS_Health[playerid] + 35.0);
 	}
-	else if (SS_Health[playerid] < 100.0)
+	else
 	{
 		new Float:amount = 100.0 - SS_Health[playerid];
 		SetPlayerHealth(playerid, SS_Health[playerid] + amount);

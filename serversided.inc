@@ -9,7 +9,7 @@
 * LIBRARY
 * ===============
 * Server sieded include (serversided.inc) - v1.2 [BETA]
-* Makes all the client side features to server scripted parts (covers Health, Armour, Money, Score, Weapon, Ammo and Vehicle Health).
+* Makes all the client side features to server scripted parts (covers Health, Armour, Money, Weapon, Ammo and Vehicle Health).
 *
 * ===============
 * CREDITS
@@ -388,7 +388,6 @@ static Float:SS_Health[MAX_PLAYERS];
 static Float:SS_Armour[MAX_PLAYERS];
 
 static SS_Money[MAX_PLAYERS];
-static SS_Score[MAX_PLAYERS];
 
 static SS_WeaponData[MAX_PLAYERS][13][2];
 
@@ -613,48 +612,6 @@ stock SS_GetPlayerMoney(playerid)
     #define _ALS_GetPlayerMoney
 #endif
 #define GetPlayerMoney SS_GetPlayerMoney
-
-forward __SetPlayerScore(playerid, score);
-public 	__SetPlayerScore(playerid, score)
-{
-    SS_Score[playerid] = score;
-}
-
-stock SS_SetPlayerScore(playerid, score)
-{
-    if (playerid < 0 || playerid >= MAX_PLAYERS)
-	{
-		return false;
-	}
-
-	CallRemoteFunction("__SetPlayerScore", "ii", playerid, score);
-
-	return SetPlayerScore(playerid, score);
-}
-#if defined _ALS_SetPlayerScore
-    #undef SetPlayerScore
-#else
-	native OLD_SetPlayerScore(playerid, score) = SetPlayerScore;
-    #define _ALS_SetPlayerScore
-#endif
-#define SetPlayerScore SS_SetPlayerScore
-
-stock SS_GetPlayerScore(playerid)
-{
-    if (playerid < 0 || playerid >= MAX_PLAYERS)
-	{
-		return 0;
-	}
-
-	return SS_Score[playerid];
-}
-#if defined _ALS_GetPlayerScore
-    #undef GetPlayerScore
-#else
-	native OLD_GetPlayerScore(playerid) = GetPlayerScore;
-    #define _ALS_GetPlayerScore
-#endif
-#define GetPlayerScore SS_GetPlayerScore
 
 forward __SetPlayerWeapon(playerid, slot, weaponid, ammo);
 public 	__SetPlayerWeapon(playerid, slot, weaponid, ammo)
@@ -894,7 +851,6 @@ public OnPlayerConnect(playerid)
 	CallRemoteFunction("__SetPlayerArmour", "if", playerid, 0.0);
 
 	CallRemoteFunction("__SetPlayerMoney", "ii", playerid, 0);
-	CallRemoteFunction("__SetPlayerScore", "ii", playerid, 0);
 
 	for (new i; i < 13; i++)
 	{
@@ -1061,7 +1017,7 @@ public OnPlayerRequestSpawn(playerid)
 	{
 		// Adjusting weapons according to classinfo
 	    CallRemoteFunction("__UpdateWeapons", "ii", playerid, 1);
-		
+
 		// Set class info team
 		SetPlayerTeam(playerid, SS_ClassData[SS_Classid[playerid]][SS_classTeam]);
 	}
@@ -1085,7 +1041,7 @@ public OnPlayerSpawn(playerid)
 
 	// Adjusting weapons according to spawninfo
  	CallRemoteFunction("__UpdateWeapons", "ii", playerid, 0);
-    
+
 	// Set spawn info team
 	SetPlayerTeam(playerid, SS_SpawnData[playerid][SS_spawnTeam]);
 
@@ -2019,12 +1975,6 @@ public OnPlayerUpdate(playerid)
 		{
 		    OLD_ResetPlayerMoney(playerid);
 			OLD_GivePlayerMoney(playerid, SS_Money[playerid]);
-		}
-
-		// Check for score hack
-		if (OLD_GetPlayerScore(playerid) != SS_Score[playerid])
-		{
-			OLD_SetPlayerScore(playerid, SS_Score[playerid]);
 		}
 
 		// Check for weapon hack

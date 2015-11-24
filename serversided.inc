@@ -8,7 +8,7 @@
 * ===============
 * LIBRARY
 * ===============
-* Server sieded include (serversided.inc) - v1.0 [BETA]
+* Server sieded include (serversided.inc) - v1.1 [BETA]
 * Makes all the client side features to server scripted parts (covers Health, Armour, Money, Score, Weapon, Ammo and Vehicle Health).
 *
 * ===============

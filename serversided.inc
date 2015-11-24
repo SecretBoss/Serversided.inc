@@ -15,7 +15,7 @@
 * CREDITS
 * ===============
 * Gammix - Include creator
-* Slice - Weapons data array, SS_ProcessDamage and Average weapon functions
+* Slice - Damage processing function, weapons array and average hit/shoot functions to catch rapid fire
 *
 */
 

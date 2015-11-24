@@ -31,7 +31,7 @@ This include makes all the client side features to server scripted parts (covers
 * Auto detects weapon bugs and fix them automatically (e.g. RPG bug, click LMB but quickly leave AIM button to avoid ammo reduction. The RPG is shot and does damage but doesn't deduct the ammo from player).
 * Modified SendDeathMessage with new weapon types detected.
 * Allows default SAMP callback features. This include just layers the player stats but leave the features as is. (e.g. Returning 0 under OnPlayerWeaponShot will still make the hitid invulnerable towards the shot).
-* 
+
 
 
 ## Disclaimer

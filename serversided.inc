@@ -973,12 +973,67 @@ public OnPlayerRequestClass(playerid, classid)
 	forward SS_OnPlayerRequestClass(playerid, classid);
 #endif
 
+public OnPlayerRequestSpawn(playerid)
+{
+	new ret = 1;
+    #if defined SS_OnPlayerRequestSpawn
+		ret = SS_OnPlayerRequestSpawn(playerid);
+	#endif
+	
+	// Adjusting weapons according to SS_class and SS_spawninfo
+    if (ret)
+	{
+		new weapon, ammo;
+		for (new i; i < 13; i++)
+		{
+			OLD_GetPlayerWeaponData(playerid, i, weapon, ammo);
+			if (weapon && ammo)
+			{
+				if (SS_ClassData[SS_Classid[playerid]][SS_classWeapon1][0] == weapon || SS_ClassData[playerid][SS_classWeapon1][1] != ammo)
+				{
+				    CallRemoteFunction("__SetPlayerWeapon", "iiii", playerid, i, weapon, SS_ClassData[SS_Classid[playerid]][SS_classWeapon1][1]);
+				    continue;
+				}
+				else if (SS_ClassData[SS_Classid[playerid]][SS_classWeapon2][1] == weapon || SS_ClassData[playerid][SS_classWeapon2][1] != ammo)
+				{
+				    CallRemoteFunction("__SetPlayerWeapon", "iiii", playerid, i, weapon, SS_ClassData[SS_Classid[playerid]][SS_classWeapon2][1]);
+				    continue;
+				}
+				else if (SS_ClassData[SS_Classid[playerid]][SS_classWeapon3][1] == weapon || SS_ClassData[playerid][SS_classWeapon3][1] != ammo)
+				{
+				    CallRemoteFunction("__SetPlayerWeapon", "iiii", playerid, i, weapon, SS_ClassData[SS_Classid[playerid]][SS_classWeapon3][1]);
+				    continue;
+				}
+				else
+				{
+				    OLD_SetPlayerAmmo(playerid, weapon, 0);
+				    CallRemoteFunction("__SetPlayerWeapon", "iiii", playerid, i, 0, 0);
+				    continue;
+				}
+			}
+		}
+		// Set class info team
+		SetPlayerTeam(playerid, SS_ClassData[SS_Classid[playerid]][SS_classTeam]);
+	}
+	
+	return ret;
+}
+#if defined _ALS_OnPlayerRequestSpawn
+    #undef OnPlayerRequestSpawn
+#else
+    #define _ALS_OnPlayerRequestSpawn
+#endif
+#define OnPlayerRequestSpawn SS_OnPlayerRequestSpawn
+#if defined SS_OnPlayerRequestSpawn
+	forward SS_OnPlayerRequestSpawn(playerid);
+#endif
+
 public OnPlayerSpawn(playerid)
 {
     SS_Knifed[playerid] = INVALID_PLAYER_ID;
     SS_LastShot[playerid][SS_shotHitid] = -1;
 
-	// Adjusting weapons according to SS_class and SS_spawninfo
+	// Adjusting weapons according to spawninfo
     new weapon, ammo;
 	for (new i; i < 13; i++)
 	{
@@ -1000,21 +1055,6 @@ public OnPlayerSpawn(playerid)
 			    CallRemoteFunction("__SetPlayerWeapon", "iiii", playerid, i, weapon, SS_SpawnData[playerid][SS_spawnWeapon3][1]);
 			    continue;
 			}
-			else if (SS_ClassData[SS_Classid[playerid]][SS_classWeapon1][0] == weapon || SS_ClassData[playerid][SS_classWeapon1][1] != ammo)
-			{
-			    CallRemoteFunction("__SetPlayerWeapon", "iiii", playerid, i, weapon, SS_ClassData[SS_Classid[playerid]][SS_classWeapon1][1]);
-			    continue;
-			}
-			else if (SS_ClassData[SS_Classid[playerid]][SS_classWeapon2][1] == weapon || SS_ClassData[playerid][SS_classWeapon2][1] != ammo)
-			{
-			    CallRemoteFunction("__SetPlayerWeapon", "iiii", playerid, i, weapon, SS_ClassData[SS_Classid[playerid]][SS_classWeapon2][1]);
-			    continue;
-			}
-			else if (SS_ClassData[SS_Classid[playerid]][SS_classWeapon3][1] == weapon || SS_ClassData[playerid][SS_classWeapon3][1] != ammo)
-			{
-			    CallRemoteFunction("__SetPlayerWeapon", "iiii", playerid, i, weapon, SS_ClassData[SS_Classid[playerid]][SS_classWeapon3][1]);
-			    continue;
-			}
 			else
 			{
 			    OLD_SetPlayerAmmo(playerid, weapon, 0);
@@ -1023,8 +1063,7 @@ public OnPlayerSpawn(playerid)
 			}
 		}
 	}
-
-	SetPlayerTeam(playerid, SS_ClassData[SS_Classid[playerid]][SS_classTeam]);
+	// Set spawn info team
 	SetPlayerTeam(playerid, SS_SpawnData[playerid][SS_spawnTeam]);
 
 	#if defined SS_OnPlayerSpawn

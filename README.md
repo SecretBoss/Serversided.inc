@@ -1,6 +1,6 @@
-# Serversided.inc `v1.1 [BETA]`
+# Serversided.inc `v1.2 [BETA]`
 
-This include makes all the client side features to server scripted parts (covers Health, Armour, Money, Score, Weapon, Ammo and Vehicle Health). This is some sort of anti cheat but this doesn't give notifications but handles the situation itself and reset to original values.
+This include makes all the client side features to server scripted parts (covers Health, Armour, Money, Weapon, Ammo and Vehicle Health). This is some sort of anti cheat but this doesn't give notifications but handles the situation itself and reset to original values.
 
 
 
@@ -24,7 +24,6 @@ This include makes all the client side features to server scripted parts (covers
 * HEALTH
 * ARMOUR
 * MONEY
-* SCORE
 ```
 (all these elements or stats work on arrays per player)
 * Scripted weapons and ammo, maintain a custom record of weapons which will make it 100% accurate to detect weapon hacks, exception for Flamethrower, Fire estinguisher and spray can.

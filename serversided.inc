@@ -894,7 +894,7 @@ public OnPlayerDisconnect(playerid, reason)
 	DeletePVar(playerid, "SS_OnPlayerUpdate");
 
 	#if defined SS_OnPlayerDisconnect
-		return SS_OnPlayerDisconnect(playerid);
+		return SS_OnPlayerDisconnect(playerid, reason);
 	#else
 		return 1;
 	#endif
@@ -906,7 +906,7 @@ public OnPlayerDisconnect(playerid, reason)
 #endif
 #define OnPlayerDisconnect SS_OnPlayerDisconnect
 #if defined SS_OnPlayerDisconnect
-	forward SS_OnPlayerDisconnect(playerid);
+	forward SS_OnPlayerDisconnect(playerid, reason);
 #endif
 
 public OnPlayerRequestClass(playerid, classid)

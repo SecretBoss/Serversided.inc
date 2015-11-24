@@ -1511,6 +1511,45 @@ stock static bool:SS_ProcessDamage(&playerid, &issuerid, &Float:amount, &weaponi
 
 public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
 {
+	new tick = GetTickCount();
+	if (tick == 0) tick = 1;
+
+	new idx = (SS_LastHitIdx[playerid] + 1) % sizeof(SS_LastHitTicks[]);
+
+	// JIT plugin fix
+	if (idx < 0)
+	{
+		idx += sizeof(SS_LastHitTicks[]);
+	}
+
+	SS_LastHitIdx[playerid] = idx;
+	SS_LastHitTicks[playerid][idx] = tick;
+	SS_LastHitWeapons[playerid][idx] = weaponid;
+
+	// Check for rapid fire / Bullet flood
+	new multiple_weapons;
+	new avg_rate = SS_AverageHitRate(playerid, 5, multiple_weapons);
+
+	// Hit issue flood?
+	// Could be either a cheat or just lag
+	if (avg_rate != -1)
+	{
+		if (multiple_weapons)
+		{
+			if (avg_rate < 100)
+			{
+				ClearAnimations(playerid);
+				return 0;
+			}
+		}
+		else if (SS_WeaponShootRate[weaponid] - avg_rate > 20)
+		{
+			ClearAnimations(playerid);
+			return 0;
+		}
+	}
+	
+	// Additional checks
 	if (damagedid != INVALID_PLAYER_ID)
 	{
 		// Check for OnPlayerWeaponShot, if it returned 0, that means no damage is given
@@ -1554,46 +1593,7 @@ public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
 		}
 	}
 
-	//
-	new tick = GetTickCount();
-	if (tick == 0) tick = 1;
-
-	new idx = (SS_LastHitIdx[playerid] + 1) % sizeof(SS_LastHitTicks[]);
-
-	// JIT plugin fix
-	if (idx < 0)
-	{
-		idx += sizeof(SS_LastHitTicks[]);
-	}
-
-	SS_LastHitIdx[playerid] = idx;
-	SS_LastHitTicks[playerid][idx] = tick;
-	SS_LastHitWeapons[playerid][idx] = weaponid;
-
-	// Check for rapid fire / Bullet flood
-	new multiple_weapons;
-	new avg_rate = SS_AverageHitRate(playerid, 5, multiple_weapons);
-
-	// Hit issue flood?
-	// Could be either a cheat or just lag
-	if (avg_rate != -1)
-	{
-		if (multiple_weapons)
-		{
-			if (avg_rate < 100)
-			{
-				ClearAnimations(playerid);
-				return 0;
-			}
-		}
-		else if (SS_WeaponShootRate[weaponid] - avg_rate > 20)
-		{
-			ClearAnimations(playerid);
-			return 0;
-		}
-	}
-
-	// Detect invalid SS_shots fired, multiple hits and so on
+	// Detect invalid shots fired, multiple hits and so on
     if (((WEAPON_COLT45 <= weaponid <= WEAPON_SNIPER) || weaponid == WEAPON_MINIGUN) && _:amount != _:2.6400001049041748046875 && ! (IsPlayerInAnyVehicle(playerid) && GetPlayerVehicleSeat(playerid) == 0))
 	{
 		if (! SS_LastShot[playerid][SS_shotValid])

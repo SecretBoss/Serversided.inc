@@ -2290,10 +2290,6 @@ stock SS_SendDeathMessage(playerid, killerid, reason)
 	    {
 			reason = WEAPON_UNARMED;
 	    }
-	    case WEAPON_UNKNOWN:
-	    {
-			reason = WEAPON_DROWN;
-	    }
 	    case WEAPON_VEHICLE_M4:
 	    {
 			reason = WEAPON_M4;

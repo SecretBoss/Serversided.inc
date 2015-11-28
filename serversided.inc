@@ -8,7 +8,7 @@
 * ===============
 * LIBRARY
 * ===============
-* Server sieded include (serversided.inc) - v1.2 [BETA]
+* Server sieded include (serversided.inc) - v1.3 [BETA]
 * Makes all the client side features to server scripted parts (covers Health, Armour, Money, Weapon, Ammo and Vehicle Health).
 *
 * ===============
@@ -163,7 +163,23 @@ static const Float:SS_WeaponRange[] =
 	0.0, // 35 - Rocket launcher
 	0.0, // 36 - Heatseeker
 	0.0, // 37 - Flamethrower
-	75.0  // 38 - Minigun
+	75.0,  // 38 - Minigun
+	0.0, // 39 - Satchel
+	0.0, // 40 - Detonator
+	15.0, // 41 - Spraycan
+	15.0, // 42 - Fire extinguisher
+	0.0, // 43 - Camera
+	0.0, // 44 - Night vision
+	0.0, // 45 - Infrared
+	0.0, // 46 - Parachute
+	0.0, // 47 - Fake pistol
+	0.0, // 48 - Pistol whip (custom)
+	0.0, // 49 - Vehicle
+	0.0, // 50 - Helicopter blades
+	0.0, // 51 - Explosion
+	0.0, // 52 - Car park (custom)
+	0.0, // 53 - Drowning
+	0.0  // 54 - Splat
 };
 
 static const Float:SS_WeaponDamage[] =
@@ -339,9 +355,7 @@ static const SS_WeaponDamageType[] =
 
 enum e_SS_CLASS_INFO
 {
-	SS_classSkin,
 	SS_classTeam,
-	Float:SS_classPos[4],
 	SS_classWeapon1[2],
 	SS_classWeapon2[2],
 	SS_classWeapon3[2]
@@ -350,9 +364,7 @@ static SS_ClassData[311 + 1][e_SS_CLASS_INFO];
 
 enum e_SS_SPAWN_INFO
 {
-	SS_spawnSkin,
 	SS_spawnTeam,
-	Float:SS_spawnPos[4],
 	SS_spawnWeapon1[2],
 	SS_spawnWeapon2[2],
 	SS_spawnWeapon3[2]
@@ -361,16 +373,9 @@ static SS_SpawnData[MAX_PLAYERS][e_SS_SPAWN_INFO];
 
 enum e_SS_LAST_SHOT
 {
-	SS_shotTick,
- 	SS_shotWeapon,
   	SS_shotHittype,
    	SS_shotHitid,
     SS_shotHits,
-	Float:SS_shotPos[3],
-	Float:SS_shotOrigin[3],
-	Float:SS_shotHit[3],
-	Float:SS_shotLength,
- 	bool:SS_shotValid,
  	bool:SS_shotReturn
 }
 static SS_LastShot[MAX_PLAYERS][e_SS_LAST_SHOT];
@@ -382,23 +387,24 @@ static SS_LastHitTicks[MAX_PLAYERS][10];
 static SS_LastHitWeapons[MAX_PLAYERS][10];
 static SS_LastHitIdx[MAX_PLAYERS];
 
-static SS_StaticPickup[MAX_PICKUPS];
-
-static Float:SS_Health[MAX_PLAYERS];
-static Float:SS_Armour[MAX_PLAYERS];
-
-static SS_Money[MAX_PLAYERS];
-
-static SS_WeaponData[MAX_PLAYERS][13][2];
-
 static SS_Classid[MAX_PLAYERS];
 static SS_Teamid[MAX_PLAYERS];
 
-static SS_LastExplosive[MAX_PLAYERS];
+static Float:SS_Health[MAX_PLAYERS];
+static Float:SS_Armour[MAX_PLAYERS];
+static SS_Money[MAX_PLAYERS];
 
-static SS_Knifed[MAX_PLAYERS];
+static SS_WeaponData[MAX_PLAYERS][13][2];
+static SS_LastExplosive[MAX_PLAYERS];
+static SS_LastClick[MAX_PLAYERS];
+static bool:SS_Holding[MAX_PLAYERS];
+static SS_LastClickWeapon[MAX_PLAYERS];
+
+static SS_KnifedBy[MAX_PLAYERS];
 
 static bool:SS_Update[MAX_PLAYERS];
+
+static SS_StaticPickup[MAX_PICKUPS];
 
 forward __SetPlayerTeam(playerid, teamid);
 public 	__SetPlayerTeam(playerid, teamid)
@@ -755,16 +761,11 @@ stock SS_GetPlayerAmmo(playerid)
 #endif
 #define GetPlayerAmmo SS_GetPlayerAmmo
 
-stock SS_AddPlayerClass(modelid, Float:SS_spawn_x, Float:SS_spawn_y, Float:SS_spawn_z, Float:z_angle, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo)
+stock SS_AddPlayerClass(modelid, Float:spawn_x, Float:spawn_y, Float:spawn_z, Float:z_angle, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo)
 {
 	new ret = AddPlayerClass(modelid, SS_spawn_x, SS_spawn_y, SS_spawn_z, z_angle, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo);
 
-	SS_ClassData[ret][SS_classSkin] = modelid;
 	SS_ClassData[ret][SS_classTeam] = NO_TEAM;
-	SS_ClassData[ret][SS_classPos][0] = x;
-	SS_ClassData[ret][SS_classPos][1] = y;
-	SS_ClassData[ret][SS_classPos][2] = z;
-	SS_ClassData[ret][SS_classPos][3] = rotation;
 	SS_ClassData[ret][SS_classWeapon1][0] = weapon1;
 	SS_ClassData[ret][SS_classWeapon1][1] = weapon1_ammo;
 	SS_ClassData[ret][SS_classWeapon2][0] = weapon2;
@@ -777,21 +778,16 @@ stock SS_AddPlayerClass(modelid, Float:SS_spawn_x, Float:SS_spawn_y, Float:SS_sp
 #if defined _ALS_AddPlayerClass
     #undef AddPlayerClass
 #else
-	native OLD_AddPlayerClass(modelid, Float:SS_spawn_x, Float:SS_spawn_y, Float:SS_spawn_z, Float:z_angle, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo) = AddPlayerClass;
+	native OLD_AddPlayerClass(modelid, Float:spawn_x, Float:spawn_y, Float:spawn_z, Float:z_angle, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo) = AddPlayerClass;
     #define _ALS_AddPlayerClass
 #endif
 #define AddPlayerClass SS_AddPlayerClass
 
-stock SS_AddPlayerClassEx(teamid, modelid, Float:SS_spawn_x, Float:SS_spawn_y, Float:SS_spawn_z, Float:z_angle, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo)
+stock SS_AddPlayerClassEx(teamid, modelid, Float:spawn_x, Float:spawn_y, Float:spawn_z, Float:z_angle, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo)
 {
 	new ret = AddPlayerClassEx(teamid, modelid, SS_spawn_x, SS_spawn_y, SS_spawn_z, z_angle, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo);
 
-	SS_ClassData[ret][SS_classSkin] = modelid;
 	SS_ClassData[ret][SS_classTeam] = teamid;
-	SS_ClassData[ret][SS_classPos][0] = x;
-	SS_ClassData[ret][SS_classPos][1] = y;
-	SS_ClassData[ret][SS_classPos][2] = z;
-	SS_ClassData[ret][SS_classPos][3] = rotation;
 	SS_ClassData[ret][SS_classWeapon1][0] = weapon1;
 	SS_ClassData[ret][SS_classWeapon1][1] = weapon1_ammo;
 	SS_ClassData[ret][SS_classWeapon2][0] = weapon2;
@@ -804,7 +800,7 @@ stock SS_AddPlayerClassEx(teamid, modelid, Float:SS_spawn_x, Float:SS_spawn_y, F
 #if defined _ALS_AddPlayerClassEx
     #undef AddPlayerClass
 #else
-	native OLD_AddPlayerClassEx(teamid, modelid, Float:SS_spawn_x, Float:SS_spawn_y, Float:SS_spawn_z, Float:z_angle, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo) = AddPlayerClassEx;
+	native OLD_AddPlayerClassEx(teamid, modelid, Float:spawn_x, Float:spawn_y, Float:spawn_z, Float:z_angle, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo) = AddPlayerClassEx;
     #define _ALS_AddPlayerClassEx
 #endif
 #define AddPlayerClassEx SS_AddPlayerClassEx
@@ -812,12 +808,7 @@ stock SS_AddPlayerClassEx(teamid, modelid, Float:SS_spawn_x, Float:SS_spawn_y, F
 forward __SetSpawnInfo(playerid, team, skin, Float:x, Float:y, Float:z, Float:rotation, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo);
 public  __SetSpawnInfo(playerid, team, skin, Float:x, Float:y, Float:z, Float:rotation, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo)
 {
-	SS_SpawnData[playerid][SS_spawnSkin] = skin;
 	SS_SpawnData[playerid][SS_spawnTeam] = team;
-	SS_SpawnData[playerid][SS_spawnPos][0] = x;
-	SS_SpawnData[playerid][SS_spawnPos][1] = y;
-	SS_SpawnData[playerid][SS_spawnPos][2] = z;
-	SS_SpawnData[playerid][SS_spawnPos][3] = rotation;
 	SS_SpawnData[playerid][SS_spawnWeapon1][0] = weapon1;
 	SS_SpawnData[playerid][SS_spawnWeapon1][1] = weapon1_ammo;
 	SS_SpawnData[playerid][SS_spawnWeapon2][0] = weapon2;
@@ -857,12 +848,14 @@ public OnPlayerConnect(playerid)
 		CallRemoteFunction("__SetPlayerWeapon", "iiii", playerid, i, 0, 0);
 	}
 	SS_LastExplosive[playerid] = 0;
+	SS_LastClick[playerid] = 0;
+	SS_Holding[playerid] = false;
+	SS_LastClickWeapon[playerid] = 0;
 
 	SS_Classid[playerid] = 0;
 	SS_Teamid[playerid] = NO_TEAM;
 
 	SS_LastShotIdx[playerid] = 0;
-	SS_LastShot[playerid][SS_shotTick] = 0;
 
 	SS_LastHitIdx[playerid] = 0;
 
@@ -1036,7 +1029,10 @@ public OnPlayerRequestSpawn(playerid)
 
 public OnPlayerSpawn(playerid)
 {
-    SS_Knifed[playerid] = INVALID_PLAYER_ID;
+    SS_Health[playerid] = 100.0;
+    OLD_SetPlayerHealth(playerid, 100.0);
+
+    SS_KnifedBy[playerid] = INVALID_PLAYER_ID;
     SS_LastShot[playerid][SS_shotHitid] = -1;
 
 	// Adjusting weapons according to spawninfo
@@ -1139,24 +1135,6 @@ stock static SS_AverageHitRate(playerid, hits, &multiple_weapons = 0)// Credits 
 
 stock static bool:SS_ProcessDamage(&playerid, &issuerid, &Float:amount, &weaponid, &bodypart) //Credits to Slice
 {
-	// Check if the damage is not negative
-	if (amount < 0.0)
-	{
-		return false;
-	}
-
-    // From stealth knife, can be any weapon
-	if (_:amount == _:1833.33154296875)
-	{
-		return false;
-	}
-
-	// Prevent carjack damage
-	if (weaponid == 54 && _:amount == _:0.0)
-	{
-		return false;
-	}
-
     // Prevent climb bug
 	if (weaponid == WEAPON_COLLISION)
 	{
@@ -1166,34 +1144,94 @@ stock static bool:SS_ProcessDamage(&playerid, &issuerid, &Float:amount, &weaponi
 		}
 	}
 
-	// Detect vehicle weapons
-	switch (weaponid)
+    // Prevent stealth knives, can be any weapon
+	if (_:amount == _:1833.33154296875)
 	{
-	    case 37, 49, 50, 51, 53, 54:
-	    {
-	    }
-		default:
+		return false;
+	}
+
+	// Detect original weapons type
+    if (issuerid != INVALID_PLAYER_ID)
+    {
+    	switch (weaponid)
 		{
-			if (issuerid != INVALID_PLAYER_ID && IsPlayerInAnyVehicle(issuerid) && GetPlayerVehicleSeat(issuerid) == 0 && (weaponid == WEAPON_M4 || weaponid == WEAPON_MINIGUN))
+			case WEAPON_M4:
 			{
-				weaponid = (weaponid == WEAPON_M4) ? (WEAPON_VEHICLE_M4) : (WEAPON_VEHICLE_MINIGUN);
+		    	// Detect vehicle m4 (sea sparrow)
+			    if (IsPlayerInAnyVehicle(issuerid) && GetPlayerVehicleSeat(issuerid) == 0)
+			    {
+					weaponid = WEAPON_VEHICLE_M4;
+				}
+				// Or detect pistol whip
+				else
+				{
+					if (_:amount == _:2.6400001049041748046875)
+					{
+						bodypart = 3;
+						weaponid = WEAPON_PISTOLWHIP;
+					}
+				}
+			}
+			case WEAPON_MINIGUN:
+			{
+		    	// Detect vehicle minigun (hunter)
+			    if (IsPlayerInAnyVehicle(issuerid) && GetPlayerVehicleSeat(issuerid) == 0)
+			    {
+					weaponid = WEAPON_VEHICLE_MINIGUN;
+				}
+				// Or detect pistol whip
+				else
+				{
+					if (_:amount == _:2.6400001049041748046875)
+					{
+						bodypart = 3;
+						weaponid = WEAPON_PISTOLWHIP;
+					}
+				}
+			}
+		    // Detect parachute puching
+			case WEAPON_PARACHUTE:
+			{
+			    weaponid = WEAPON_UNARMED;
+			}
+			// Detect pistol whip
+			case WEAPON_COLT45..WEAPON_AK47, WEAPON_TEC9..WEAPON_SNIPER, WEAPON_SPRAYCAN, WEAPON_FIREEXTINGUISHER:
+			{
+				if (_:amount == _:2.6400001049041748046875)
+				{
+					bodypart = 3;
+					weaponid = WEAPON_PISTOLWHIP;
+				}
+			}
+			// Detect and use the player's last explosive
+			case WEAPON_EXPLOSION:
+			{
+				if (SS_LastExplosive[issuerid])
+				{
+					weaponid = SS_LastExplosive[issuerid];
+				}
 			}
 		}
 	}
 
-	// Prevent invalid range SS_shots
-	if ((WEAPON_COLT45 <= weaponid <= WEAPON_SNIPER) || weaponid == WEAPON_MINIGUN)
+	// Check for valid range shots
+	if (SS_WeaponRange[weaponid] != 0.0)
 	{
 		new Float:x, Float:y, Float:z;
 		GetPlayerPos(playerid, x, y, z);
-
 		if (GetPlayerDistanceFromPoint(playerid, x, y, z) > SS_WeaponRange[weaponid] + 2.0)
-  		{
+	  	{
 			return false;
 		}
 	}
 
-	// Adjust damage for animation bugs
+	// Explosions do at most 82.5 damage. This will later be multipled by the damage value
+	if (weaponid == WEAPON_EXPLOSION)
+	{
+		amount /= 82.5;
+	}
+
+	// Adjust damage from animation bugs
 	switch (amount)
 	{
 		case 3.63000011444091796875,
@@ -1242,24 +1280,11 @@ stock static bool:SS_ProcessDamage(&playerid, &issuerid, &Float:amount, &weaponi
 		}
 	}
 
-	// Car parking
-	if (weaponid == WEAPON_HELIBLADES && _:amount != _:330.0)
-	{
-		weaponid = WEAPON_CARPARK;
-	}
-
 	// Finish processing drown/fire/carpark quickly, since they are sent at very high rates
 	if ((WEAPON_COLT45 <= weaponid <= WEAPON_SNIPER) || weaponid == WEAPON_MINIGUN)
 	{
 		// Apply reasonable bounds
-		if (weaponid == WEAPON_DROWN)
-		{
-			if (amount > 10.0)
-			{
-				amount = 10.0;
-			}
-		}
-		else if (amount > 1.0)
+		if (amount > 1.0)
 		{
 			amount = 1.0;
 		}
@@ -1270,154 +1295,14 @@ stock static bool:SS_ProcessDamage(&playerid, &issuerid, &Float:amount, &weaponi
 			amount *= SS_WeaponDamage[weaponid];
 		}
 
-		// Make sure the distance and issuer is valid; carpark can be self-inflicted so it doesn't require an issuer
-		if (weaponid == WEAPON_SPRAYCAN || weaponid == WEAPON_FIREEXTINGUISHER || (weaponid == WEAPON_CARPARK && issuerid != INVALID_PLAYER_ID))
-		{
-			if (issuerid == INVALID_PLAYER_ID)
-			{
-				return false;
-			}
-
-			new Float:x, Float:y, Float:z;
-			GetPlayerPos(issuerid, x, y, z);
-			if (GetPlayerDistanceFromPoint(playerid, x, y, z) > 15.0)
-			{
-				return false;
-			}
-		}
-
 		return true;
 	}
 
-	// Bullet or melee damage must have an issuerid, otherwise something has gone wrong (e.g. sniper bug)
-	if (issuerid == INVALID_PLAYER_ID && (((WEAPON_COLT45 <= weaponid <= WEAPON_SNIPER) || weaponid == WEAPON_MINIGUN) || ((WEAPON_UNARMED <= weaponid <= WEAPON_KATANA) || (WEAPON_DILDO <= weaponid <= WEAPON_CANE) || weaponid == WEAPON_PISTOLWHIP)))
-	{
-		return false;
-	}
-
-	// Punching with a parachute
-	if (weaponid == WEAPON_PARACHUTE)
-	{
-		weaponid = WEAPON_UNARMED;
-	}
-
-	// Collision damage should never be above 165
-	if (weaponid == WEAPON_COLLISION)
-	{
-		if (amount > 165.0)
-		{
-			amount = 1.0;
-		}
-		else
-		{
-			amount /= 165.0;
-		}
-	}
-
-	if (weaponid == WEAPON_EXPLOSION)
-	{
-		// Explosions do at most 82.5 damage. This will later be multipled by the damage value
-		amount /= 82.5;
-
-		// Figure out what caused the explosion
-		if (issuerid != INVALID_PLAYER_ID && SS_LastExplosive[issuerid])
-		{
-			weaponid = SS_LastExplosive[issuerid];
-		}
-	}
-
-	// Check for pistol whip
-	switch (weaponid)
-	{
-		case WEAPON_COLT45..WEAPON_SNIPER, WEAPON_MINIGUN, WEAPON_SPRAYCAN, WEAPON_FIREEXTINGUISHER:
-		{
-			// A pistol whip inflicts 2.64 damage
-			if (_:amount == _:2.6400001049041748046875)
-			{
-				// Save the weapon in the bodypart argument (it's always BODY_PART_TORSO)
-				bodypart = weaponid;
-				weaponid = WEAPON_PISTOLWHIP;
-			}
-		}
-	}
-
-	new bool:melee = bool:((WEAPON_UNARMED <= weaponid <= WEAPON_KATANA) || (WEAPON_DILDO <= weaponid <= WEAPON_CANE) || weaponid == WEAPON_PISTOLWHIP);
-
-	// Can't punch from a vehicle
-	if (melee && IsPlayerInAnyVehicle(issuerid))
-	{
-		return false;
-	}
-
-	if (weaponid != WEAPON_PISTOLWHIP)
-	{
-		switch (amount)
-		{
-			case 1.32000005245208740234375,
-			     1.650000095367431640625,
-			     1.980000019073486328125,
-			     2.3100001811981201171875,
-			     2.6400001049041748046875,
-			     2.9700000286102294921875,
-			     3.96000003814697265625,
-			     4.28999996185302734375,
-			     4.62000036239624023437,
-			     5.280000209808349609375:
-		 	{
-				// Damage is most likely from punching and switching weapon quickly
-				if (! melee)
-				{
-					weaponid = WEAPON_UNARMED;
-					melee = true;
-				}
-			}
-			case 6.6000003814697265625:
-			{
-				if (! melee)
-				{
-					switch (weaponid)
-					{
-						case WEAPON_UZI, WEAPON_TEC9, WEAPON_CHAINSAW, WEAPON_SHOTGUN, WEAPON_SAWEDOFF:
-						{
-						}
-						default:
-						{
-							weaponid = WEAPON_UNARMED;
-							melee = true;
-						}
-					}
-				}
-			}
-			case 54.12000274658203125:
-			{
-				if (!melee)
-				{
-					melee = true;
-					weaponid = WEAPON_UNARMED;
-					amount = 1.32000005245208740234375;
-				}
-
-				// Be extra sure about this one
-				if (GetPlayerFightingStyle(issuerid) != FIGHT_STYLE_KNEEHEAD)
-				{
-					return false;
-				}
-			}
-			// Melee damage has been tampered with
-			default:
-			{
-				if (melee)
-				{
-					return false;
-				}
-			}
-		}
-	}
-
+	// Check for shotgun bullets
 	new Float:bullets;
 	switch (weaponid)
 	{
-		// The spas SS_shotguns shoot 8 bullets, each inflicting 4.95 damage
+		// The spas shotgun shoot 8 bullets, each inflicting 4.95 damage
 		case WEAPON_SHOTGSPA:
 		{
 			bullets = amount / 4.950000286102294921875;
@@ -1427,7 +1312,7 @@ stock static bool:SS_ProcessDamage(&playerid, &issuerid, &Float:amount, &weaponi
 				return false;
 			}
 		}
-		// Shotguns and sawed-off SS_shotguns shoot 15 bullets, each inflicting 3.3 damage
+		// Shotguns and sawed-off shotgun shoot 15 bullets, each inflicting 3.3 damage
 		case WEAPON_SHOTGUN, WEAPON_SAWEDOFF:
 		{
 			bullets = amount / 3.30000019073486328125;
@@ -1471,36 +1356,36 @@ stock static bool:SS_ProcessDamage(&playerid, &issuerid, &Float:amount, &weaponi
 		}
 	}
 
- 	// Check gun damage
+ 	// Check valid gun damage
 	if (weaponid != WEAPON_COLLISION)
 	{
 		if (_:amount && _:amount > _:SS_WeaponDamage[weaponid])
 		{
 		    return false;
 		}
-	}
-
-	// Adjust the damage
-	switch (SS_WeaponDamageType[weaponid])
-	{
-	    // multiplyable damage
-		case 0:
+		
+		// Adjust the damage
+		switch (SS_WeaponDamageType[weaponid])
 		{
-			if (_:SS_WeaponDamage[weaponid] != _:1.0)
+		    // multiplyable damage
+			case 0:
 			{
-				amount *= SS_WeaponDamage[weaponid];
+				if (_:SS_WeaponDamage[weaponid] != _:1.0)
+				{
+					amount *= SS_WeaponDamage[weaponid];
+				}
 			}
-		}
-		// a constant rate of damage
-		case 1:
-		{
-			if (_:bullets)
+			// a constant rate of damage
+			case 1:
 			{
-				amount = SS_WeaponDamage[weaponid] * bullets;
-			}
-			else
-			{
-				amount = SS_WeaponDamage[weaponid];
+				if (_:bullets)
+				{
+					amount = SS_WeaponDamage[weaponid] * bullets;
+				}
+				else
+				{
+					amount = SS_WeaponDamage[weaponid];
+				}
 			}
 		}
 	}
@@ -1548,7 +1433,7 @@ public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
 			return 0;
 		}
 	}
-	
+
 	// Additional checks
 	if (damagedid != INVALID_PLAYER_ID)
 	{
@@ -1558,6 +1443,7 @@ public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
 	        if (! SS_LastShot[playerid][SS_shotReturn])
 	        {
 	            SS_LastShot[playerid][SS_shotReturn] = true;
+	            SS_LastShot[playerid][SS_shotHitid] = -1;
 
 				#if defined SS_OnPlayerGiveDamage
 					return SS_OnPlayerGiveDamage(playerid, damagedid, amount, weaponid, bodypart);
@@ -1596,18 +1482,14 @@ public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
 	// Detect invalid shots fired, multiple hits and so on
     if (((WEAPON_COLT45 <= weaponid <= WEAPON_SNIPER) || weaponid == WEAPON_MINIGUN) && _:amount != _:2.6400001049041748046875 && ! (IsPlayerInAnyVehicle(playerid) && GetPlayerVehicleSeat(playerid) == 0))
 	{
-		if (! SS_LastShot[playerid][SS_shotValid])
+		if (WEAPON_SHOTGUN <= weaponid <= WEAPON_SHOTGSPA)
 		{
-			SS_LastShot[playerid][SS_shotHits] += 1;
-		    return false;
-		}
-		else if (WEAPON_SHOTGUN <= weaponid <= WEAPON_SHOTGSPA)
-		{
-			// Let's assume someone won't hit 3 players with 1 SS_shotgun SS_shot, and that one OnPlayerWeaponShot can be out of sync
+			// Let's assume someone won't hit 3 players with 1 shotgun shot, and that one OnPlayerWeaponShot can be out of sync
 			if (SS_LastShot[playerid][SS_shotHits] >= 3)
 			{
 				SS_LastShot[playerid][SS_shotHits] += 1;
-			    return false;
+				ClearAnimations(playerid);
+			    return 0;
 			}
 		}
 		else if (SS_LastShot[playerid][SS_shotHits] > 0)
@@ -1616,7 +1498,8 @@ public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
 			if (SS_LastShot[playerid][SS_shotHits] > 4 && weaponid != WEAPON_SNIPER)
 			{
 				SS_LastShot[playerid][SS_shotHits] += 1;
-			    return false;
+				ClearAnimations(playerid);
+			    return 0;
 			}
 		}
 
@@ -1643,7 +1526,7 @@ forward SS_OnPlayerKnifed(playerid, killerid);
 public  SS_OnPlayerKnifed(playerid, killerid)
 {
 	SetPlayerHealth(playerid, 0.0);
-	SS_Knifed[playerid] = killerid;
+	SS_KnifedBy[playerid] = killerid;
 
 	DeletePVar(playerid, "SS_Knifed");
 }
@@ -1654,9 +1537,9 @@ public OnPlayerDeath(playerid, killerid, reason)
 	SS_Armour[playerid] = 0.0;
 
 	// Playerid was knifed
-	if (SS_Knifed[playerid] != INVALID_PLAYER_ID)
+	if (SS_KnifedBy[playerid] != INVALID_PLAYER_ID)
 	{
-	    killerid = SS_Knifed[playerid];
+	    killerid = SS_KnifedBy[playerid];
 	    reason = 4;
 	}
 
@@ -1686,6 +1569,7 @@ public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
 	        if (! SS_LastShot[issuerid][SS_shotReturn])
 	        {
 	            SS_LastShot[issuerid][SS_shotReturn] = true;
+	            SS_LastShot[issuerid][SS_shotHitid] = -1;
 
 				#if defined SS_OnPlayerTakeDamage
 					return SS_OnPlayerTakeDamage(playerid, issuerid, amount, weaponid, bodypart);
@@ -1715,13 +1599,11 @@ public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
 	// If the damage is valid, reduce armour or health
 	if (SS_Armour[playerid])
 	{
-	    SS_Armour[playerid] -= amount;
-		SetPlayerArmour(playerid, SS_Armour[playerid]);
+		SetPlayerArmour(playerid, SS_Armour[playerid] - amount);
 	}
 	else
 	{
-    	SS_Health[playerid] -= amount;
-		SetPlayerHealth(playerid, SS_Health[playerid]);
+		SetPlayerHealth(playerid, SS_Health[playerid] - amount);
     }
 
 	#if defined SS_OnPlayerTakeDamage
@@ -1742,8 +1624,7 @@ public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
 
 public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY, Float:fZ)
 {
-	SS_LastShot[playerid][SS_shotValid] = false;
-	SS_LastShot[playerid][SS_shotHits] = false;
+	SS_LastShot[playerid][SS_shotHits] = 0;
 
 	// Decrease the ammo through the script to maintain player weapon data record
 	if ((WEAPON_COLT45 <= weaponid <= WEAPON_SNIPER) || weaponid == WEAPON_MINIGUN)
@@ -1824,20 +1705,8 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY
 	SS_LastShotTicks[playerid][idx] = tick;
 	SS_LastShotWeapons[playerid][idx] = weaponid;
 
-	SS_LastShot[playerid][SS_shotTick] = tick;
-	SS_LastShot[playerid][SS_shotWeapon] = weaponid;
 	SS_LastShot[playerid][SS_shotHittype] = hittype;
 	SS_LastShot[playerid][SS_shotHitid] = hitid;
-	SS_LastShot[playerid][SS_shotPos][0] = fX;
-	SS_LastShot[playerid][SS_shotPos][1] = fY;
-	SS_LastShot[playerid][SS_shotPos][2] = fZ;
-	SS_LastShot[playerid][SS_shotOrigin][0] = origin[0];
-	SS_LastShot[playerid][SS_shotOrigin][1] = origin[1];
-	SS_LastShot[playerid][SS_shotOrigin][2] = origin[2];
-	SS_LastShot[playerid][SS_shotHit][0] = hit[0];
-	SS_LastShot[playerid][SS_shotHit][1] = hit[1];
-	SS_LastShot[playerid][SS_shotHit][2] = hit[2];
-	SS_LastShot[playerid][SS_shotLength] = length;
 	SS_LastShot[playerid][SS_shotHits] = 0;
 	#if defined SS_OnPlayerWeaponShot
 		SS_LastShot[playerid][SS_shotReturn] = bool:SS_OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, fX, fY, fZ);
@@ -1977,57 +1846,144 @@ public OnPlayerUpdate(playerid)
 			OLD_GivePlayerMoney(playerid, SS_Money[playerid]);
 		}
 
-		// Check for weapon hack
+		//Weapons check
 		new weapon = GetPlayerWeapon(playerid);
 		new slot = SS_GetWeaponSlot(weapon);
-		if (SS_WeaponData[playerid][slot][0] != weapon)
+		switch (SS_LastClickWeapon[playerid])
 		{
-			OLD_SetPlayerAmmo(playerid, weapon, 0);
-			OLD_GivePlayerWeapon(playerid, SS_WeaponData[playerid][slot][0], SS_WeaponData[playerid][slot][1]);
-		}
-		else
-		{
-		    switch (weapon)
-		    {
-				case WEAPON_GRENADE..WEAPON_MOLTOV, WEAPON_COLT45..WEAPON_SNIPER, WEAPON_ROCKETLAUNCHER, WEAPON_HEATSEEKER, WEAPON_MINIGUN, WEAPON_CAMERA, WEAPON_SATCHEL:
-		    	{
-					if (SS_WeaponData[playerid][slot][1] != OLD_GetPlayerAmmo(playerid))
-					{
-						OLD_SetPlayerAmmo(playerid, weapon, SS_WeaponData[playerid][slot][1]);
+		    // Detect thrown weapon usage
+			case WEAPON_TEARGAS, WEAPON_MOLTOV, WEAPON_GRENADE, WEAPON_SATCHEL:
+			{
+				if (GetTickCount() - SS_LastClick[playerid] < 425)
+				{
+				    if (weapon != SS_LastClickWeapon[playerid])
+				    {
+				        SS_LastClickWeapon[playerid] = 0;
+				    }
+				    else
+				    {
+						new animlib[32], animname[32];
+						GetAnimationName(GetPlayerAnimationIndex(playerid), animlib, 32, animname, 32);
+						if (! animlib[0] || strcmp(animlib, "GRENADE", true))
+						{
+					  		SS_LastClickWeapon[playerid] = 0;
+						}
 					}
 				}
-				default:
+				else
 				{
-					if (OLD_GetPlayerAmmo(playerid) > SS_WeaponData[playerid][slot][1])
+					if (weapon == WEAPON_GRENADE || weapon == WEAPON_SATCHEL)
 					{
-						OLD_SetPlayerAmmo(playerid, weapon, SS_WeaponData[playerid][slot][1]);
+						SS_LastExplosive[playerid] = SS_LastClickWeapon[playerid];
+					}
+					slot = SS_GetWeaponSlot(SS_LastClickWeapon[playerid]);
+					SS_LastClickWeapon[playerid] = 0;
+
+					SS_WeaponData[playerid][slot][1]--;
+					if (! SS_WeaponData[playerid][slot][1])
+					{
+						SS_WeaponData[playerid][slot][0] = 0;
+						SS_WeaponData[playerid][slot][1] = 0;
+					}
+				}
+			}
+		    // Detect RPG weapon usage
+	        case WEAPON_ROCKETLAUNCHER, WEAPON_HEATSEEKER:
+	        {
+				if (GetTickCount() - SS_LastClick[playerid] < 450)
+				{
+					if (! SS_Holding[playerid])
+					{
+					    if (weapon != SS_LastClickWeapon[playerid])
+					    {
+					        SS_LastClickWeapon[playerid] = 0;
+					    }
+					}
+				}
+				else
+				{
+					SS_LastExplosive[playerid] = SS_LastClickWeapon[playerid];
+					
+					slot = SS_GetWeaponSlot(SS_LastClickWeapon[playerid]);
+					SS_LastClickWeapon[playerid] = 0;
+
+					SS_WeaponData[playerid][slot][1]--;
+					if (! SS_WeaponData[playerid][slot][1])
+					{
+						SS_WeaponData[playerid][slot][0] = 0;
+						SS_WeaponData[playerid][slot][1] = 0;
+					}
+				}
+			}
+		    // Detect Camera usage
+	        case WEAPON_CAMERA:
+	        {
+				if (SS_Holding[playerid])
+				{
+					if (GetTickCount() - SS_LastClick[playerid] >= 1000)
+					{
+					    if (weapon != SS_LastClickWeapon[playerid])
+					    {
+					        SS_LastClickWeapon[playerid] = 0;
+					    }
+					    else
+					    {
+						    SS_LastClick[playerid] = GetTickCount();
+							SS_WeaponData[playerid][slot][1]--;
+
+							if (! SS_WeaponData[playerid][slot][1])
+							{
+								SS_WeaponData[playerid][slot][0] = 0;
+								SS_WeaponData[playerid][slot][1] = 0;
+							}
+						}
+					}
+				}
+				else
+				{
+				    if (GetTickCount() - SS_LastClick[playerid] >= 1000)
+					{
+					    slot = SS_GetWeaponSlot(SS_LastClickWeapon[playerid]);
+						SS_LastClickWeapon[playerid] = 0;
+
+						SS_WeaponData[playerid][slot][1]--;
+						if (! SS_WeaponData[playerid][slot][1])
+						{
+							SS_WeaponData[playerid][slot][0] = 0;
+							SS_WeaponData[playerid][slot][1] = 0;
+						}
 					}
 				}
 			}
 		}
-
-		// Detecting vending machine
-	    if (GetPlayerState(playerid) == PLAYER_STATE_ONFOOT)
+		// Normal checks
+		if (! SS_LastClickWeapon[playerid])
 		{
-			if (GetPlayerAnimationIndex(playerid) == 1660 && SS_Money[playerid] > 0 && GetPVarType(playerid, "SS_Vending") == PLAYER_VARTYPE_NONE)
+  			// Prevent weapons spawn bug
+			if (SS_WeaponData[playerid][slot][0] != weapon)
 			{
-			    new interiorid = GetPlayerInterior(playerid);
-				for (new i, j = sizeof(SS_VendingMachine); i < j; i++)
-				{
-				    if (interiorid != SS_VendingMachine[i][SS_vmInteriorid])
-				    {
-				        continue;
-				    }
-
-					if (! IsPlayerInRangeOfPoint(playerid, 1.0, SS_VendingMachine[i][SS_vmFrontX], SS_VendingMachine[i][SS_vmFrontY], SS_VendingMachine[i][SS_vmZHeight]))
-					{
-						continue;
+				OLD_SetPlayerAmmo(playerid, weapon, 0);
+				OLD_GivePlayerWeapon(playerid, SS_WeaponData[playerid][slot][0], SS_WeaponData[playerid][slot][1]);
+			}
+			// Prevent ammo bug
+			else
+			{
+			    switch (weapon)
+			    {
+					case WEAPON_GRENADE..WEAPON_MOLTOV, WEAPON_COLT45..WEAPON_SNIPER, WEAPON_ROCKETLAUNCHER, WEAPON_HEATSEEKER, WEAPON_MINIGUN, WEAPON_CAMERA, WEAPON_SATCHEL:
+			    	{
+						if (SS_WeaponData[playerid][slot][1] != OLD_GetPlayerAmmo(playerid))
+						{
+							OLD_SetPlayerAmmo(playerid, weapon, SS_WeaponData[playerid][slot][1]);
+						}
 					}
-
-					SetPVarInt(playerid, "SS_Vending", SetTimerEx("OnPlayerUseVendingMachine", 1750, false, "i", playerid));
-					GivePlayerMoney(playerid, -1);
-
-					break;
+					default:
+					{
+						if (OLD_GetPlayerAmmo(playerid) > SS_WeaponData[playerid][slot][1])
+						{
+							OLD_SetPlayerAmmo(playerid, weapon, SS_WeaponData[playerid][slot][1]);
+						}
+					}
 				}
 			}
 		}
@@ -2052,70 +2008,79 @@ public OnPlayerUpdate(playerid)
 forward OnPlayerUseVendingMachine(playerid);
 public  OnPlayerUseVendingMachine(playerid)
 {
-	if (SS_Health[playerid] + 35.0 <= 100.0)
- 	{
-		SetPlayerHealth(playerid, SS_Health[playerid] + 35.0);
-	}
-	else
+	if (SS_Health[playerid] < 100.0)
 	{
-		new Float:amount = 100.0 - SS_Health[playerid];
-		SetPlayerHealth(playerid, SS_Health[playerid] + amount);
-  	}
+		SetPlayerHealth(playerid, (SS_Health[playerid] + 35.0 >= 100.0) ? (100.0) : (SS_Health[playerid] + 35.0));
+	}
 
 	DeletePVar(playerid, "SS_Vending");
 }
 
+#if ! defined KEY_AIM
+	#define KEY_AIM (128)
+#endif
+#if ! defined HOLDING
+	#define HOLDING(%0) ((newkeys & (%0)) == (%0))
+#endif
 #if ! defined PRESSED
 	#define PRESSED(%0) (((newkeys & (%0)) == (%0)) && ((oldkeys & (%0)) != (%0)))
+#endif
+#if ! defined RELEASED
+	#define RELEASED(%0) (((newkeys & (%0)) != (%0)) && ((oldkeys & (%0)) == (%0)))
 #endif
 public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 {
 	// Store player last explosive used
     if (GetPlayerState(playerid) == PLAYER_STATE_ONFOOT)
 	{
-	    if (PRESSED(KEY_FIRE))
+	    // Detecting usage of vending machine
+	    if (PRESSED(KEY_SECONDARY_ATTACK))
+	    {
+		    if (GetPlayerAnimationIndex(playerid) != 1660 && SS_Money[playerid] > 0 && GetPVarType(playerid, "SS_Vending") == PLAYER_VARTYPE_NONE)
+			{
+	  			new interiorid = GetPlayerInterior(playerid);
+				for (new i, j = sizeof(SS_VendingMachine); i < j; i++)
+				{
+					if (interiorid != SS_VendingMachine[i][SS_vmInteriorid])
+	    			{
+					    continue;
+					}
+
+					if (! IsPlayerInRangeOfPoint(playerid, 1.0, SS_VendingMachine[i][SS_vmFrontX], SS_VendingMachine[i][SS_vmFrontY], SS_VendingMachine[i][SS_vmZHeight]))
+					{
+						continue;
+					}
+					
+					SetPVarInt(playerid, "SS_Vending", SetTimerEx("OnPlayerUseVendingMachine", 1500, false, "i", playerid));
+					GivePlayerMoney(playerid, -1);
+
+					break;
+				}
+			}
+		}
+		// Maintain custom record of Thrown, RPG and Camera
+		else if (newkeys & KEY_FIRE)
 		{
  			new weaponid = GetPlayerWeapon(playerid);
 		    switch (weaponid)
 			{
-				case WEAPON_BOMB, WEAPON_SATCHEL:
-				{
-					SS_LastExplosive[playerid] = WEAPON_SATCHEL;
-
-	  				new slot = SS_GetWeaponSlot(weaponid);
-
-					SS_WeaponData[playerid][slot][1]--;
-					if (! SS_WeaponData[playerid][slot][1])
-					{
-					 	SS_WeaponData[playerid][slot][0] = 0;
-					    SS_WeaponData[playerid][slot][1] = 0;
-				    }
-				}
-				case WEAPON_ROCKETLAUNCHER, WEAPON_HEATSEEKER, WEAPON_GRENADE:
-				{
+				case WEAPON_TEARGAS, WEAPON_MOLTOV, WEAPON_GRENADE, WEAPON_SATCHEL, WEAPON_ROCKETLAUNCHER, WEAPON_HEATSEEKER, WEAPON_CAMERA:
+	     		{
 					SS_LastExplosive[playerid] = weaponid;
-
-					new slot = SS_GetWeaponSlot(weaponid);
-
-					SS_WeaponData[playerid][slot][1]--;
-					if (! SS_WeaponData[playerid][slot][1])
-					{
-					 	SS_WeaponData[playerid][slot][0] = 0;
-					    SS_WeaponData[playerid][slot][1] = 0;
-				    }
-				}
-				case WEAPON_CAMERA:
-				{
-					new slot = SS_GetWeaponSlot(weaponid);
-
-					SS_WeaponData[playerid][slot][1]--;
-					if (! SS_WeaponData[playerid][slot][1])
-					{
-					 	SS_WeaponData[playerid][slot][0] = 0;
-					    SS_WeaponData[playerid][slot][1] = 0;
-				    }
+				    SS_LastClickWeapon[playerid] = weaponid;
+				    SS_LastClick[playerid] = GetTickCount();
 				}
 			}
+		}
+
+		// Detect holding weapons (eg. RPG)
+	    if (newkeys && HOLDING(KEY_AIM | KEY_FIRE))
+		{
+		    SS_Holding[playerid] = true;
+		}
+		else if (newkeys && RELEASED(KEY_AIM))
+		{
+		    SS_Holding[playerid] = false;
 		}
 	}
 

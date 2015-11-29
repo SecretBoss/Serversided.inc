@@ -763,7 +763,7 @@ stock SS_GetPlayerAmmo(playerid)
 
 stock SS_AddPlayerClass(modelid, Float:spawn_x, Float:spawn_y, Float:spawn_z, Float:z_angle, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo)
 {
-	new ret = AddPlayerClass(modelid, SS_spawn_x, SS_spawn_y, SS_spawn_z, z_angle, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo);
+	new ret = AddPlayerClass(modelid, spawn_x, spawn_y, spawn_z, z_angle, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo);
 
 	SS_ClassData[ret][SS_classTeam] = NO_TEAM;
 	SS_ClassData[ret][SS_classWeapon1][0] = weapon1;
@@ -785,7 +785,7 @@ stock SS_AddPlayerClass(modelid, Float:spawn_x, Float:spawn_y, Float:spawn_z, Fl
 
 stock SS_AddPlayerClassEx(teamid, modelid, Float:spawn_x, Float:spawn_y, Float:spawn_z, Float:z_angle, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo)
 {
-	new ret = AddPlayerClassEx(teamid, modelid, SS_spawn_x, SS_spawn_y, SS_spawn_z, z_angle, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo);
+	new ret = AddPlayerClassEx(teamid, modelid, spawn_x, spawn_y, spawn_z, z_angle, weapon1, weapon1_ammo, weapon2, weapon2_ammo, weapon3, weapon3_ammo);
 
 	SS_ClassData[ret][SS_classTeam] = teamid;
 	SS_ClassData[ret][SS_classWeapon1][0] = weapon1;

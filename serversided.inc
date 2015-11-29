@@ -1363,7 +1363,7 @@ stock static bool:SS_ProcessDamage(&playerid, &issuerid, &Float:amount, &weaponi
 		{
 		    return false;
 		}
-		
+
 		// Adjust the damage
 		switch (SS_WeaponDamageType[weaponid])
 		{
@@ -1434,6 +1434,13 @@ public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
 		}
 	}
 
+	// Process damage
+	if (! SS_ProcessDamage(damagedid, playerid, amount, weaponid, bodypart))
+	{
+		ClearAnimations(playerid);
+	    return 0;
+	}
+
 	// Additional checks
 	if (damagedid != INVALID_PLAYER_ID)
 	{
@@ -1461,13 +1468,6 @@ public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
 				return 1;
 			#endif
 		}
-	}
-
-	// Process damage
-	if (! SS_ProcessDamage(damagedid, playerid, amount, weaponid, bodypart))
-	{
-		ClearAnimations(playerid);
-	    return 0;
 	}
 
 	// Knifing system
@@ -1561,6 +1561,13 @@ public OnPlayerDeath(playerid, killerid, reason)
 
 public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
 {
+	// Process damage
+	if (! SS_ProcessDamage(playerid, issuerid, amount, weaponid, bodypart))
+	{
+		ClearAnimations(issuerid);
+	    return 0;
+	}
+	
 	if (issuerid != INVALID_PLAYER_ID)
 	{
 		// Check for OnPlayerWeaponShot, if it returned 0, that means no damage is given
@@ -1587,13 +1594,6 @@ public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
 				return 1;
 			#endif
 		}
-	}
-
-	// Process damage
-	if (! SS_ProcessDamage(playerid, issuerid, amount, weaponid, bodypart))
-	{
-		ClearAnimations(issuerid);
-	    return 0;
 	}
 
 	// If the damage is valid, reduce armour or health
@@ -1860,15 +1860,6 @@ public OnPlayerUpdate(playerid)
 				    {
 				        SS_LastClickWeapon[playerid] = 0;
 				    }
-				    else
-				    {
-						new animlib[32], animname[32];
-						GetAnimationName(GetPlayerAnimationIndex(playerid), animlib, 32, animname, 32);
-						if (! animlib[0] || strcmp(animlib, "GRENADE", true))
-						{
-					  		SS_LastClickWeapon[playerid] = 0;
-						}
-					}
 				}
 				else
 				{
@@ -1903,7 +1894,7 @@ public OnPlayerUpdate(playerid)
 				else
 				{
 					SS_LastExplosive[playerid] = SS_LastClickWeapon[playerid];
-					
+
 					slot = SS_GetWeaponSlot(SS_LastClickWeapon[playerid]);
 					SS_LastClickWeapon[playerid] = 0;
 
@@ -2050,7 +2041,7 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 					{
 						continue;
 					}
-					
+
 					SetPVarInt(playerid, "SS_Vending", SetTimerEx("OnPlayerUseVendingMachine", 1500, false, "i", playerid));
 					GivePlayerMoney(playerid, -1);
 

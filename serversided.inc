@@ -8,7 +8,7 @@
 * ===============
 * LIBRARY
 * ===============
-* Server sieded include (serversided.inc) - v1.3 [BETA]
+* Server sieded include (serversided.inc) - v1.4 [BETA]
 * Makes all the client side features to server scripted parts (covers Health, Armour, Money, Weapon, Ammo and Vehicle Health).
 *
 * ===============
@@ -28,101 +28,103 @@
 #define WEAPON_CARPARK 			52
 #define WEAPON_UNKNOWN 			55
 
-// All default vending machines
-enum e_SS_VENDING_MACHINE
-{
-	SS_vmInteriorid,
-	Float:SS_vmZHeight,
-	Float:SS_vmFrontX,
-	Float:SS_vmFrontY
-}
-static const Float:SS_VendingMachine[][e_SS_VENDING_MACHINE] =
-{
-	{0, 21.98, -862.84, 1537.60},
-	{0, 25.96, 2271.72, -77.46},
-	{0, 18.95, 1278.73, 372.07},
-	{0, 15.71, 662.41, -551.16},
-	{0, 0.89,  200.01, -107.63},
-	{0, 62.24, -252.74, 2597.95},
-	{0, 62.24, -252.74, 2599.75},
-	{0, 19.12, -75.03, 1227.99},
-	{0, 18.95, -14.72, 1176.35},
-	{7, 998.58,  315.87, -140.36},
-	{17, 1000.73, 373.82, -179.14},
-	{17, 1000.73,  378.03, -178.90},
-	{17, 1000.73, 495.95, -23.32},
-	{17, 1000.73, 500.56, -2.36},
-	{17, 1000.73, 501.82, -2.42},
-	{0, 55.23, -1455.13, 2592.66},
-	{0, 23.77, 2353.17, -1357.15},
-	{0, 14.21, 2325.97, -1646.13},
-	{0, 23.35, 2140.51, -1161.53},
-	{0, 62.23, 2154.03, -1015.54},
-	{0, 12.94, 1929.73, -1772.44},
-	{1, 1000.06, 2223.36, 1602.64},
-	{1, 1000.05, 2223.20, 1606.77},
-	{1, 1000.05, 2156.90, 1606.77},
-	{1, 1000.05,  2208.90, 1607.17},
-	{1, 1000.06, 2156.84, 1607.87},
-	{1, 1000.06, 2202.43, 1618.00},
-	{1, 1000.06, 2209.24, 1620.21},
-	{3, 1020.07, 330.67, 177.50},
-	{3, 1020.07, 331.92, 177.50},
-	{3, 1008.47, 351.90, 206.08},
-	{3, 1008.47, 361.54, 159.61},
-	{3, 1020.07, 371.59, 177.45},
-	{3, 1008.47, 374.89, 187.97},
-	{2, 1061.09,  2575.70, -1284.44},
-	{15,1025.90,  2224.20, -1153.43},
-	{0, 15.15,  1153.72, -1460.90},
-	{0, 12.96, 2480.84, -1958.27},
-	{0, 12.92, 2060.11, -1898.64},
-	{0, 12.94, 1729.78, -1944.04},
-	{0, 12.89, 1634.10, -2238.53},
-	{0, 15.16,  1788.21, -1369.28},
-	{0, 34.70, -2229.20, 287.41},
-	{256, 27.07,  -1981.78, 142.64},
-	{256, 34.72, -2119.93, -423.40},
-	{256, 34.72, -2119.58, -422.17},
-	{256, 34.72, -2097.29, -397.33},
-	{256, 34.72, -2092.08, -491.05},
-	{256, 34.72, -2063.27, -491.05},
-	{256, 34.72, -2005.64, -491.05},
-	{256, 34.72, -2034.46, -491.05},
-	{256, 34.72, -2068.58, -397.33},
-	{256, 34.72, -2039.86, -397.33},
-	{256, 34.72, -2011.15, -397.33},
-	{256, 10.58, -1349.11, 492.28},
-	{256, 10.58, -1349.11, 493.85},
-	{0, 10.21, 2319.99, 2531.85},
-	{0, 10.78, 2845.72, 1294.04},
-	{0, 10.21, 2503.12, 1244.69},
-	{0, 10.21, 2647.69, 1128.66},
-	{0, 44.29, -2419.21, 984.57},
-	{0, 44.29, -2419.17, 985.94},
-	{0, 10.45, 2086.77, 2071.35},
-	{0, 10.42, 1398.82, 2223.60},
-	{0, 10.21, 1659.46, 1721.85},
-	{0, 10.00, 1519.14, 1055.24},
-	{6, 1003.63, -19.05, -56.83},
-	{18, 1003.63, -16.13, -90.64},
-	{16, 1003.63, -15.11, -139.22},
-	{17, 1003.63, -32.46, -185.69},
-	{16, 1003.63, -35.74, -139.22},
-	{6, 1003.63, -36.16, -56.87},
-	{18, 1003.63, -17.56, -90.71},
-	{16, 1003.63, -16.54, -139.29},
-	{17, 1003.63, -33.89, -185.76},
-	{6, 1003.63, -19.05, -56.83},
-	{6, 1003.63, -36.16, -56.87},
-	{18, 1003.63, -16.13, -90.64},
-	{18, 1003.63, -17.56, -90.71},
-	{16, 1003.63, -16.54, -139.29},
-	{16, 1003.63, -15.11, -139.22},
-	{17, 1003.63, -33.89, -185.76},
-	{17, 1003.63, -32.46, -185.69},
-	{16, 1003.63, -35.74, -139.22}
-};
+#if ! defined NO_VENDING_MACHINES
+	// All default vending machines
+	enum e_SS_VENDING_MACHINE
+	{
+		SS_vmInteriorid,
+		Float:SS_vmZHeight,
+		Float:SS_vmFrontX,
+		Float:SS_vmFrontY
+	}
+	static const Float:SS_VendingMachine[][e_SS_VENDING_MACHINE] =
+	{
+		{0, 21.98, -862.84, 1537.60},
+		{0, 25.96, 2271.72, -77.46},
+		{0, 18.95, 1278.73, 372.07},
+		{0, 15.71, 662.41, -551.16},
+		{0, 0.89,  200.01, -107.63},
+		{0, 62.24, -252.74, 2597.95},
+		{0, 62.24, -252.74, 2599.75},
+		{0, 19.12, -75.03, 1227.99},
+		{0, 18.95, -14.72, 1176.35},
+		{7, 998.58,  315.87, -140.36},
+		{17, 1000.73, 373.82, -179.14},
+		{17, 1000.73,  378.03, -178.90},
+		{17, 1000.73, 495.95, -23.32},
+		{17, 1000.73, 500.56, -2.36},
+		{17, 1000.73, 501.82, -2.42},
+		{0, 55.23, -1455.13, 2592.66},
+		{0, 23.77, 2353.17, -1357.15},
+		{0, 14.21, 2325.97, -1646.13},
+		{0, 23.35, 2140.51, -1161.53},
+		{0, 62.23, 2154.03, -1015.54},
+		{0, 12.94, 1929.73, -1772.44},
+		{1, 1000.06, 2223.36, 1602.64},
+		{1, 1000.05, 2223.20, 1606.77},
+		{1, 1000.05, 2156.90, 1606.77},
+		{1, 1000.05,  2208.90, 1607.17},
+		{1, 1000.06, 2156.84, 1607.87},
+		{1, 1000.06, 2202.43, 1618.00},
+		{1, 1000.06, 2209.24, 1620.21},
+		{3, 1020.07, 330.67, 177.50},
+		{3, 1020.07, 331.92, 177.50},
+		{3, 1008.47, 351.90, 206.08},
+		{3, 1008.47, 361.54, 159.61},
+		{3, 1020.07, 371.59, 177.45},
+		{3, 1008.47, 374.89, 187.97},
+		{2, 1061.09,  2575.70, -1284.44},
+		{15,1025.90,  2224.20, -1153.43},
+		{0, 15.15,  1153.72, -1460.90},
+		{0, 12.96, 2480.84, -1958.27},
+		{0, 12.92, 2060.11, -1898.64},
+		{0, 12.94, 1729.78, -1944.04},
+		{0, 12.89, 1634.10, -2238.53},
+		{0, 15.16,  1788.21, -1369.28},
+		{0, 34.70, -2229.20, 287.41},
+		{256, 27.07,  -1981.78, 142.64},
+		{256, 34.72, -2119.93, -423.40},
+		{256, 34.72, -2119.58, -422.17},
+		{256, 34.72, -2097.29, -397.33},
+		{256, 34.72, -2092.08, -491.05},
+		{256, 34.72, -2063.27, -491.05},
+		{256, 34.72, -2005.64, -491.05},
+		{256, 34.72, -2034.46, -491.05},
+		{256, 34.72, -2068.58, -397.33},
+		{256, 34.72, -2039.86, -397.33},
+		{256, 34.72, -2011.15, -397.33},
+		{256, 10.58, -1349.11, 492.28},
+		{256, 10.58, -1349.11, 493.85},
+		{0, 10.21, 2319.99, 2531.85},
+		{0, 10.78, 2845.72, 1294.04},
+		{0, 10.21, 2503.12, 1244.69},
+		{0, 10.21, 2647.69, 1128.66},
+		{0, 44.29, -2419.21, 984.57},
+		{0, 44.29, -2419.17, 985.94},
+		{0, 10.45, 2086.77, 2071.35},
+		{0, 10.42, 1398.82, 2223.60},
+		{0, 10.21, 1659.46, 1721.85},
+		{0, 10.00, 1519.14, 1055.24},
+		{6, 1003.63, -19.05, -56.83},
+		{18, 1003.63, -16.13, -90.64},
+		{16, 1003.63, -15.11, -139.22},
+		{17, 1003.63, -32.46, -185.69},
+		{16, 1003.63, -35.74, -139.22},
+		{6, 1003.63, -36.16, -56.87},
+		{18, 1003.63, -17.56, -90.71},
+		{16, 1003.63, -16.54, -139.29},
+		{17, 1003.63, -33.89, -185.76},
+		{6, 1003.63, -19.05, -56.83},
+		{6, 1003.63, -36.16, -56.87},
+		{18, 1003.63, -16.13, -90.64},
+		{18, 1003.63, -17.56, -90.71},
+		{16, 1003.63, -16.54, -139.29},
+		{16, 1003.63, -15.11, -139.22},
+		{17, 1003.63, -33.89, -185.76},
+		{17, 1003.63, -32.46, -185.69},
+		{16, 1003.63, -35.74, -139.22}
+	};
+#endif
 
 static const Float:SS_WeaponRange[] =
 {
@@ -1922,31 +1924,33 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 	// Store player last explosive used
     if (GetPlayerState(playerid) == PLAYER_STATE_ONFOOT)
 	{
-	    // Detecting usage of vending machine
-	    if (PRESSED(KEY_SECONDARY_ATTACK))
-	    {
-		    if (GetPlayerAnimationIndex(playerid) != 1660 && SS_Money[playerid] > 0 && GetPVarType(playerid, "SS_Vending") == PLAYER_VARTYPE_NONE)
-			{
-	  			new interiorid = GetPlayerInterior(playerid);
-				for (new i, j = sizeof(SS_VendingMachine); i < j; i++)
+	    #if ! defined NO_VENDING_MACHINES
+		    // Detecting usage of vending machine
+		    if (PRESSED(KEY_SECONDARY_ATTACK))
+		    {
+			    if (GetPlayerAnimationIndex(playerid) != 1660 && SS_Money[playerid] > 0 && GetPVarType(playerid, "SS_Vending") == PLAYER_VARTYPE_NONE)
 				{
-					if (interiorid != SS_VendingMachine[i][SS_vmInteriorid])
-	    			{
-					    continue;
-					}
-
-					if (! IsPlayerInRangeOfPoint(playerid, 1.0, SS_VendingMachine[i][SS_vmFrontX], SS_VendingMachine[i][SS_vmFrontY], SS_VendingMachine[i][SS_vmZHeight]))
+		  			new interiorid = GetPlayerInterior(playerid);
+					for (new i, j = sizeof(SS_VendingMachine); i < j; i++)
 					{
-						continue;
+						if (interiorid != SS_VendingMachine[i][SS_vmInteriorid])
+		    			{
+						    continue;
+						}
+
+						if (! IsPlayerInRangeOfPoint(playerid, 1.0, SS_VendingMachine[i][SS_vmFrontX], SS_VendingMachine[i][SS_vmFrontY], SS_VendingMachine[i][SS_vmZHeight]))
+						{
+							continue;
+						}
+
+						SetPVarInt(playerid, "SS_Vending", SetTimerEx("OnPlayerUseVendingMachine", 2600, false, "i", playerid));
+						GivePlayerMoney(playerid, -1);
+
+						break;
 					}
-
-					SetPVarInt(playerid, "SS_Vending", SetTimerEx("OnPlayerUseVendingMachine", 2600, false, "i", playerid));
-					GivePlayerMoney(playerid, -1);
-
-					break;
 				}
 			}
-		}
+		#endif
 		
 		if (newkeys & KEY_FIRE)
 		{
@@ -1985,16 +1989,18 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 	forward SS_OnPlayerKeyStateChange(playerid, newkeys, oldkeys);
 #endif
 
-forward OnPlayerUseVendingMachine(playerid);
-public  OnPlayerUseVendingMachine(playerid)
-{
-	if (SS_Health[playerid] < 100.0)
+#if ! defined NO_VENDING_MACHINES
+	forward OnPlayerUseVendingMachine(playerid);
+	public  OnPlayerUseVendingMachine(playerid)
 	{
-	    SetPlayerHealth(playerid, (100.0 - SS_Health[playerid] >= 35.0) ? (SS_Health[playerid] + 35.0) : (SS_Health[playerid] + (100.0 - SS_Health[playerid])));
- 	}
+		if (SS_Health[playerid] < 100.0)
+		{
+		    SetPlayerHealth(playerid, (100.0 - SS_Health[playerid] >= 35.0) ? (SS_Health[playerid] + 35.0) : (SS_Health[playerid] + (100.0 - SS_Health[playerid])));
+	 	}
 
-	DeletePVar(playerid, "SS_Vending");
-}
+		DeletePVar(playerid, "SS_Vending");
+	}
+#endif
 
 stock static SS_GetModelWeaponID(weaponid)
 {
@@ -2055,6 +2061,18 @@ public  __SetStaticPickup(pickupid, model)
 
 stock SS_AddStaticPickup(model, type, Float:X, Float:Y, Float:Z, Virtualworld)
 {
+	switch (model)
+	{
+	    case 1240, 1242, 321..369, 371, 372:
+	    {
+   		}
+     	
+     	default:
+     	{
+     	    return AddStaticPickup(model, type, X, Y, Z, Virtualworld);
+     	}
+	}
+	
 	new ret = CreatePickup(model, type, X, Y, Z, Virtualworld);
 	if (ret == -1)
 	{
@@ -2068,9 +2086,47 @@ stock SS_AddStaticPickup(model, type, Float:X, Float:Y, Float:Z, Virtualworld)
 #if defined _ALS_AddStaticPickup
     #undef AddStaticPickup
 #else
+	native OLD_AddStaticPickup(model, type, Float:X, Float:Y, Float:Z, Virtualworld) = AddStaticPickup;
     #define _ALS_AddStaticPickup
 #endif
 #define AddStaticPickup SS_AddStaticPickup
+
+stock SS_CreatePickup(model, type, Float:X, Float:Y, Float:Z, Virtualworld)
+{
+    if (type == 1)
+	{
+ 		return CreatePickup(model, type, X, Y, Z, Virtualworld);
+	}
+	
+	switch (model)
+	{
+	    case 1240, 1242, 321..369, 371, 372:
+	    {
+   		}
+
+     	default:
+     	{
+     	    return CreatePickup(model, type, X, Y, Z, Virtualworld);
+     	}
+	}
+
+	new ret = CreatePickup(model, type, X, Y, Z, Virtualworld);
+	if (ret == -1)
+	{
+	    return false;
+	}
+
+	CallRemoteFunction("__SetStaticPickup", "ii", ret, model);
+
+	return true;
+}
+#if defined _ALS_CreatePickup
+    #undef CreatePickup
+#else
+	native OLD_CreatePickup(model, type, Float:X, Float:Y, Float:Z, Virtualworld) = CreatePickup;
+    #define _ALS_CreatePickup
+#endif
+#define CreatePickup SS_CreatePickup
 
 stock SS_DestroyPickup(pickupid)
 {
@@ -2084,6 +2140,7 @@ stock SS_DestroyPickup(pickupid)
 #if defined _ALS_DestroyPickup
     #undef DestroyPickup
 #else
+	native OLD_DestroyPickup(pickupid) = DestroyPickup;
     #define _ALS_DestroyPickup
 #endif
 #define DestroyPickup SS_DestroyPickup
@@ -2117,11 +2174,59 @@ public OnPlayerPickUpPickup(playerid, pickupid)
       	{
        		new weapon = SS_GetModelWeaponID(SS_StaticPickup[pickupid]);
        		new slot = SS_GetWeaponSlot(weapon);
+       		
+       		switch (weapon)
+		    {
+		        case WEAPON_BRASSKNUCKLE..WEAPON_CANE, 44, 45, WEAPON_PARACHUTE:
+		        {
+    				SS_WeaponData[playerid][slot][1] += 1;
+		        }
+		        case WEAPON_GRENADE..WEAPON_MOLTOV, WEAPON_SATCHEL:
+		        {
+    				SS_WeaponData[playerid][slot][1] += 2;
+		        }
+		        case WEAPON_COLT45..WEAPON_DEAGLE:
+		        {
+    				SS_WeaponData[playerid][slot][1] += 100;
+		        }
+		        case WEAPON_SHOTGUN..WEAPON_SHOTGSPA:
+		        {
+    				SS_WeaponData[playerid][slot][1] += 100;
+		        }
+		        case WEAPON_UZI, WEAPON_MP5, WEAPON_TEC9:
+		        {
+    				SS_WeaponData[playerid][slot][1] += 200;
+		        }
+		        case WEAPON_AK47, WEAPON_M4:
+		        {
+    				SS_WeaponData[playerid][slot][1] += 100;
+		        }
+		        case WEAPON_RIFLE, WEAPON_SNIPER:
+		        {
+    				SS_WeaponData[playerid][slot][1] += 100;
+		        }
+		        case WEAPON_ROCKETLAUNCHER, WEAPON_HEATSEEKER:
+		        {
+    				SS_WeaponData[playerid][slot][1] += 2;
+		        }
+		        case WEAPON_FLAMETHROWER:
+		        {
+    				SS_WeaponData[playerid][slot][1] += 500;
+		        }
+		        case WEAPON_MINIGUN:
+		        {
+    				SS_WeaponData[playerid][slot][1] += 100;
+		        }
+		        case WEAPON_SPRAYCAN, WEAPON_FIREEXTINGUISHER, WEAPON_CAMERA:
+		        {
+    				SS_WeaponData[playerid][slot][1] += 100;
+		        }
+		    }
+       		
          	if (weapon != -1)
           	{
 			  	SS_WeaponData[playerid][slot][0] = weapon;
-    			SS_WeaponData[playerid][slot][1] += 100;
-           		OLD_GivePlayerWeapon(playerid, weapon, 100);
+           		OLD_GivePlayerWeapon(playerid, weapon, SS_WeaponData[playerid][slot][1]);
            	}
 
 			return 1;

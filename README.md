@@ -1,4 +1,4 @@
-# Serversided.inc `v1.3 [BETA]`
+# Serversided.inc `v1.4 [BETA]`
 
 This include makes all the client side features to server scripted parts (covers Health, Armour, Money, Weapon, Ammo and Vehicle Health). This is some sort of anti cheat but this doesn't give notifications but handles the situation itself and reset to original values.
 

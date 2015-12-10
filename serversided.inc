@@ -2255,7 +2255,7 @@ stock SS_SendDeathMessage(playerid, killerid, reason)
 	{
 	    case WEAPON_UNKNOWN:
 	    {
-			weapon = WEAPON_DROWN;
+			reason = WEAPON_DROWN;
 	    }
 	    case WEAPON_CARPARK:
 	    {

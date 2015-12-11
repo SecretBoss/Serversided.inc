@@ -128,22 +128,22 @@
 
 static const Float:SS_WeaponRange[] =
 {
-	10.0, // 0 - Fist
-	10.0, // 1 - Brass knuckles
-	10.0, // 2 - Golf club
-	10.0, // 3 - Nitestick
-	10.0, // 4 - Knife
-	10.0, // 5 - Bat
-	10.0, // 6 - Shovel
-	10.0, // 7 - Pool cue
-	10.0, // 8 - Katana
-	10.0, // 9 - Chainsaw
-	10.0, // 10 - Dildo
-	10.0, // 11 - Dildo 2
-	10.0, // 12 - Vibrator
+	15.0, // 0 - Fist
+	15.0, // 1 - Brass knuckles
+	15.0, // 2 - Golf club
+	15.0, // 3 - Nitestick
+	15.0, // 4 - Knife
+	15.0, // 5 - Bat
+	15.0, // 6 - Shovel
+	15.0, // 7 - Pool cue
+	15.0, // 8 - Katana
+	15.0, // 9 - Chainsaw
+	15.0, // 10 - Dildo
+	15.0, // 11 - Dildo 2
+	15.0, // 12 - Vibrator
 	15.0, // 13 - Vibrator 2
-	10.0, // 14 - Flowers
-	10.0, // 15 - Cane
+	15.0, // 14 - Flowers
+	15.0, // 15 - Cane
 	0.0, // 16 - Grenade
 	0.0, // 17 - Teargas
 	0.0, // 18 - Molotov
@@ -169,14 +169,14 @@ static const Float:SS_WeaponRange[] =
 	75.0,  // 38 - Minigun
 	0.0, // 39 - Satchel
 	0.0, // 40 - Detonator
-	10.0, // 41 - Spraycan
-	10.0, // 42 - Fire extinguisher
+	15.0, // 41 - Spraycan
+	15.0, // 42 - Fire extinguisher
 	0.0, // 43 - Camera
 	0.0, // 44 - Night vision
 	0.0, // 45 - Infrared
 	0.0, // 46 - Parachute
 	0.0, // 47 - Fake pistol
-	10.0, // 48 - Pistol whip (custom)
+	15.0, // 48 - Pistol whip (custom)
 	0.0, // 49 - Vehicle
 	0.0, // 50 - Helicopter blades
 	0.0, // 51 - Explosion
@@ -797,7 +797,7 @@ public OnPlayerConnect(playerid)
 	SS_Teamid[playerid] = NO_TEAM;
 
 	SS_LastExplosive[playerid] = 0;
-	
+
 	SS_LastShotIdx[playerid] = 0;
 
 	SS_LastHitIdx[playerid] = 0;
@@ -1017,581 +1017,6 @@ stock static SS_AverageShootRate(playerid, SS_shots, &multiple_weapons = 0)// Cr
 	return total / (SS_shots - 1);
 }
 
-stock static SS_AverageHitRate(playerid, hits, &multiple_weapons = 0)// Credits to Slice
-{
-	new total = 0;
-	new idx = SS_LastHitIdx[playerid];
-
-	multiple_weapons = false;
-
-	for (new i = hits - 2; i >= 0; i--)
-	{
-		new prev_idx = (idx - i - 1) % sizeof(SS_LastHitTicks[]);
-
-		// JIT plugin fix
-		if (prev_idx < 0)
-		{
-			prev_idx += sizeof(SS_LastHitTicks[]);
-		}
-
-		new prev = SS_LastHitTicks[playerid][prev_idx];
-		new prev_weap = SS_LastHitWeapons[playerid][prev_idx];
-		new this_idx = (idx - i) % sizeof(SS_LastHitTicks[]);
-
-		// JIT plugin fix
-		if (this_idx < 0)
-		{
-			this_idx += sizeof(SS_LastHitTicks[]);
-		}
-
-		if (prev_weap != SS_LastHitWeapons[playerid][this_idx])
-		{
-			multiple_weapons = true;
-		}
-
-		total += SS_LastHitTicks[playerid][this_idx] - prev;
-	}
-
-	return total / (hits - 1);
-}
-
-stock static bool:SS_ProcessDamage(&playerid, &issuerid, &Float:amount, &weaponid, &bodypart) //Credits to Slice, Modified by me
-{
-	// Amount can't be negative
-	if (amount < 0.0)
-	{
-	    return false;
-	}
-	
-    // Prevent climb bug
-	if (weaponid == WEAPON_COLLISION)
-	{
-		if (1061 <= GetPlayerAnimationIndex(playerid) <= 1067)
-		{
-			return false;
-		}
-	}
-
-    // Prevent stealth knives, can be any weapon
-	if (_:amount == _:1833.33154296875)
-	{
-		return false;
-	}
-
-	// Detect original weapons type
-    if (issuerid != INVALID_PLAYER_ID)
-    {
-        switch (weaponid)
-        {
-            case WEAPON_COLT45..WEAPON_SNIPER, WEAPON_SPRAYCAN, WEAPON_FIREEXTINGUISHER:
-            {
-				if (_:amount == _:2.6400001049041748046875)
-				{
-					bodypart = 3;
-					weaponid = WEAPON_PISTOLWHIP;
-				}
-			}
-			case WEAPON_HELIBLADES:
-			{
-			    if (_:amount != _:330.0)
-			    {
-			        weaponid = WEAPON_CARPARK;
-			    }
-			}
-		}
-	}
-
-	if (weaponid != WEAPON_PISTOLWHIP)
-	{
-		switch (amount)
-		{
-			case 1.32000005245208740234375,
-			     1.650000095367431640625,
-			     1.980000019073486328125,
-			     2.3100001811981201171875,
-			     2.6400001049041748046875,
-			     2.9700000286102294921875,
-			     3.96000003814697265625,
-			     4.28999996185302734375,
-			     4.62000036239624023437,
-			     5.280000209808349609375:
-		 	{
-				if (! ((WEAPON_UNARMED <= weaponid <= WEAPON_KATANA) || (WEAPON_DILDO <= weaponid <= WEAPON_CANE) || weaponid == WEAPON_PISTOLWHIP))
-				{
-					weaponid = WEAPON_UNARMED;
-				}
-			}
-
-			case 6.6000003814697265625:
-			{
-				if (! ((WEAPON_UNARMED <= weaponid <= WEAPON_KATANA) || (WEAPON_DILDO <= weaponid <= WEAPON_CANE) || weaponid == WEAPON_PISTOLWHIP))
-				{
-					switch (weaponid)
-					{
-						case WEAPON_UZI, WEAPON_TEC9, WEAPON_CHAINSAW, WEAPON_SHOTGUN, WEAPON_SAWEDOFF:
-					 	{
-					 	}
-						default:
-						{
-							weaponid = WEAPON_UNARMED;
-						}
-					}
-				}
-			}
-
-			case 54.12000274658203125:
-			{
-				if (! ((WEAPON_UNARMED <= weaponid <= WEAPON_KATANA) || (WEAPON_DILDO <= weaponid <= WEAPON_CANE) || weaponid == WEAPON_PISTOLWHIP))
-				{
-					weaponid = WEAPON_UNARMED;
-					amount = 1.32000005245208740234375;
-				}
-			}
-		}
-	}
-	
-	// Detecting what caused the damage
-	if (weaponid == WEAPON_EXPLOSION)
-	{
-		if (issuerid != INVALID_PLAYER_ID && GetPlayerState(issuerid) != PLAYER_STATE_DRIVER && SS_LastExplosive[issuerid])
-		{
-			weaponid = SS_LastExplosive[playerid];
-		}
-	}
-
-	// Check for valid range shots
-	new Float:distance;
-	if (SS_WeaponRange[weaponid] != 0.0)
-	{
-		new Float:x, Float:y, Float:z;
-		GetPlayerPos(issuerid, x, y, z);
-		
-		distance = GetPlayerDistanceFromPoint(playerid, x, y, z);
-		if (distance > SS_WeaponRange[weaponid] + 2.0)
-	  	{
-			return false;
-		}
-	}
-
-	// Adjust damage from animation bugs
-	switch (amount)
-	{
-		case 3.63000011444091796875,
-		     5.940000057220458984375,
-		     5.610000133514404296875:
-	 	{
-			amount = 2.6400001049041748046875;
-		}
-
-		case 3.30000019073486328125:
-		{
-			if (weaponid != WEAPON_SHOTGUN && weaponid != WEAPON_SAWEDOFF)
-			{
-				amount = 2.6400001049041748046875;
-			}
-		}
-
-		case 4.950000286102294921875:
-		{
-			if ((WEAPON_UNARMED <= weaponid <= WEAPON_KATANA) || (WEAPON_DILDO <= weaponid <= WEAPON_CANE) || weaponid == WEAPON_PISTOLWHIP)
-			{
-				amount = 2.6400001049041748046875;
-			}
-		}
-
-		case 6.270000457763671875,
-		     6.93000030517578125,
-		     7.2600002288818359375,
-		     7.9200000762939453125,
-		     8.5799999237060546875,
-		     9.24000072479248046875,
-		     11.88000011444091796875,
-		     11.22000026702880859375:
-	 	{
-			amount = 2.6400001049041748046875;
-		}
-
-		case 9.90000057220458984375:
-		{
-			switch (weaponid)
-			{
-				case WEAPON_VEHICLE, WEAPON_VEHICLE_M4, WEAPON_AK47, WEAPON_M4, WEAPON_SHOTGUN, WEAPON_SAWEDOFF, WEAPON_SHOTGSPA:
-				{
-				}
-				default:
-				{
-					amount = 6.6000003814697265625;
-				}
-			}
-		}
-	}
-
-	// Check chainsaw damage
-	if (weaponid == WEAPON_CHAINSAW)
-	{
-		switch (amount)
-		{
-			case 6.6000003814697265625,
-			     13.5300006866455078125,
-			     16.1700000762939453125,
-			     26.40000152587890625,
-			     27.060001373291015625:
-		 	{
-			}
-
-			default:
-			{
-				amount = SS_WeaponDamage[WEAPON_CHAINSAW];
-			}
-		}
-	}
-
-	switch (weaponid)
-	{
-	    case WEAPON_EXPLOSION:
-	    {
-	        // Explosions do at most 82.5 damage. This will later be multipled by the damage value
-			amount /= 82.5;
-	    }
-	    
-		case WEAPON_COLLISION:
-		{
-		    // Collision damage is never greater than 165
-			if (amount > 165.0)
-			{
-				amount = 1.0;
-			}
-			else
-			{
-				amount /= 165.0;
-			}
-		}
-		
-		case WEAPON_DROWN:
-		{
-		    // Drowing can max cause -10.0 health
-		    if (amount > 10.0)
-			{
-				amount = 10.0;
-			}
-		}
-	}
-
-	// Adjust damage for shotguns
-	new Float:bullets;
-	switch (weaponid)
-	{
-		// The spas shotguns shoot 8 bullets, each inflicting 4.95 damage
-		case WEAPON_SHOTGSPA:
-		{
-			bullets = amount / 4.950000286102294921875;
-
-			if (8.0 - bullets < -0.05)
-			{
-				return false;
-			}
-		}
-
-		// Shotguns and sawed-off shotguns shoot 15 bullets, each inflicting 3.3 damage
-		case WEAPON_SHOTGUN, WEAPON_SAWEDOFF:
-		{
-			bullets = amount / 3.30000019073486328125;
-
-			if (15.0 - bullets < -0.05)
-			{
-				return false;
-			}
-		}
-	}
-
-	if (_:bullets)
-	{
-		new Float:f = floatfract(bullets);
-
-		// The damage for each bullet has been tampered with
-		if (f > 0.01 && f < 0.99)
-		{
-			return false;
-		}
-
-		// Divide the damage amount by the number of bullets
-		amount /= bullets;
-	}
-	
-	switch (weaponid)
-	{
-	    case WEAPON_UNARMED..WEAPON_GRENADE,
-			 WEAPON_ROCKETLAUNCHER..WEAPON_FLAMETHROWER,
-			 WEAPON_SATCHEL,
-			 WEAPON_EXPLOSION,
-			 WEAPON_COLLISION:
-		{
-		    amount *= SS_WeaponDamage[weaponid];
-		}
-
-		case WEAPON_MOLTOV,
-			 WEAPON_COLT45..WEAPON_DEAGLE,
-			 WEAPON_UZI..WEAPON_SNIPER,
-			 WEAPON_MINIGUN,
-			 WEAPON_SPRAYCAN, WEAPON_FIREEXTINGUISHER,
-			 WEAPON_PISTOLWHIP, WEAPON_VEHICLE, WEAPON_HELIBLADES:
-		{
-		    amount = SS_WeaponDamage[weaponid];
-		}
-		
-		case WEAPON_SHOTGUN..WEAPON_SHOTGSPA:
-	 	{
-	 	    amount = SS_WeaponDamage[weaponid] * bullets;
-		}
-	}
-	
-	// If the amount is not greater default damage
-	new multiplier = (weaponid == WEAPON_SHOTGSPA) ? (8) : ((weaponid == WEAPON_SHOTGUN || weaponid == WEAPON_SAWEDOFF) ? (15) : (1));
-	
-	if (_:amount && _:amount < _:SS_WeaponDamage[weaponid] * multiplier)
-	{
-	    return false;
-	}
-
-	// Valid damage was given
-	return true;
-}
-
-public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
-{
-	new tick = GetTickCount();
-	if (tick == 0) tick = 1;
-
-	new idx = (SS_LastHitIdx[playerid] + 1) % sizeof(SS_LastHitTicks[]);
-
-	// JIT plugin fix
-	if (idx < 0)
-	{
-		idx += sizeof(SS_LastHitTicks[]);
-	}
-
-	SS_LastHitIdx[playerid] = idx;
-	SS_LastHitTicks[playerid][idx] = tick;
-	SS_LastHitWeapons[playerid][idx] = weaponid;
-
-	// Check for rapid fire / Bullet flood
-	new multiple_weapons;
-	new avg_rate = SS_AverageHitRate(playerid, 5, multiple_weapons);
-
-	// Hit issue flood?
-	// Could be either a cheat or just lag
-	if (avg_rate != -1)
-	{
-		if (multiple_weapons)
-		{
-			if (avg_rate < 100)
-			{
-				ClearAnimations(playerid);
-				return 0;
-			}
-		}
-		else if (SS_WeaponShootRate[weaponid] - avg_rate > 20)
-		{
-			ClearAnimations(playerid);
-			return 0;
-		}
-	}
-
-	// Process damage
-	if (! (weaponid == WEAPON_KNIFE && _:amount == _:0.0))
- 	{
-		if (! SS_ProcessDamage(damagedid, playerid, amount, weaponid, bodypart))
-		{
-			ClearAnimations(playerid);
-		    return 0;
-		}
-	}
-	
-	// Additional checks
-	if (damagedid != INVALID_PLAYER_ID)
-	{
-		// Check for OnPlayerWeaponShot, if it returned 0, that means no damage is given
-	    if (SS_LastShot[playerid][SS_shotHittype] == BULLET_HIT_TYPE_PLAYER && SS_LastShot[playerid][SS_shotHitid] == damagedid)
-	    {
-	        if (! SS_LastShot[playerid][SS_shotReturn])
-	        {
-	            SS_LastShot[playerid][SS_shotReturn] = true;
-	            SS_LastShot[playerid][SS_shotHitid] = -1;
-
-				#if defined SS_OnPlayerGiveDamage
-					return SS_OnPlayerGiveDamage(playerid, damagedid, amount, weaponid, bodypart);
-				#else
-					return 1;
-				#endif
-	        }
-	    }
-		// Check for same teams
-		if ((SS_Teamid[playerid] != NO_TEAM || SS_Teamid[damagedid] != NO_TEAM) && SS_Teamid[playerid] == SS_Teamid[damagedid])
-		{
-		    #if defined SS_OnPlayerGiveDamage
-				return SS_OnPlayerGiveDamage(playerid, damagedid, amount, weaponid, bodypart);
-			#else
-				return 1;
-			#endif
-		}
-	}
-
-	// Knifing system
-    if (weaponid == WEAPON_KNIFE && _:amount == _:0.0 && GetPVarType(playerid, "SS_Knifed") == PLAYER_VARTYPE_NONE)
-	{
-		SetPVarInt(playerid, "SS_Knifed", SetTimerEx("SS_OnPlayerKnifed", 4000 - GetPlayerPing(playerid), false, "ii", damagedid, playerid));
-	}
-
-	// Detect invalid shots fired, multiple hits and so on
-    if (((WEAPON_COLT45 <= weaponid <= WEAPON_SNIPER) || weaponid == WEAPON_MINIGUN) && _:amount != _:2.6400001049041748046875 && ! (IsPlayerInAnyVehicle(playerid) && GetPlayerVehicleSeat(playerid) == 0))
-	{
-		if (WEAPON_SHOTGUN <= weaponid <= WEAPON_SHOTGSPA)
-		{
-			// Let's assume someone won't hit 3 players with 1 shotgun shot, and that one OnPlayerWeaponShot can be out of sync
-			if (SS_LastShot[playerid][SS_shotHits] >= 3)
-			{
-				SS_LastShot[playerid][SS_shotHits] += 1;
-				ClearAnimations(playerid);
-			    return 0;
-			}
-		}
-		else if (SS_LastShot[playerid][SS_shotHits] > 0)
-		{
-			// Sniper doesn't always send OnPlayerWeaponShot
-			if (SS_LastShot[playerid][SS_shotHits] > 4 && weaponid != WEAPON_SNIPER)
-			{
-				SS_LastShot[playerid][SS_shotHits] += 1;
-				ClearAnimations(playerid);
-			    return 0;
-			}
-		}
-
-		SS_LastShot[playerid][SS_shotHits] += 1;
-	}
-
-	#if defined SS_OnPlayerGiveDamage
-		return SS_OnPlayerGiveDamage(playerid, damagedid, amount, weaponid, bodypart);
-	#else
-		return 1;
-	#endif
-}
-#if defined _ALS_OnPlayerGiveDamage
-    #undef OnPlayerGiveDamage
-#else
-    #define _ALS_OnPlayerGiveDamage
-#endif
-#define OnPlayerGiveDamage SS_OnPlayerGiveDamage
-#if defined SS_OnPlayerGiveDamage
-	forward SS_OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart);
-#endif
-
-forward SS_OnPlayerKnifed(playerid, killerid);
-public  SS_OnPlayerKnifed(playerid, killerid)
-{
-	SetPlayerHealth(playerid, 0.0);
-	SS_KnifedBy[playerid] = killerid;
-
-	DeletePVar(playerid, "SS_Knifed");
-}
-
-public OnPlayerDeath(playerid, killerid, reason)
-{
-	SS_Health[playerid] = 0.0;
-	SS_Armour[playerid] = 0.0;
-
-	// Playerid was knifed
-	if (SS_KnifedBy[playerid] != INVALID_PLAYER_ID)
-	{
-	    killerid = SS_KnifedBy[playerid];
-	    reason = 4;
-	}
-
-	#if defined SS_OnPlayerDeath
-		return SS_OnPlayerDeath(playerid, killerid, reason);
-	#else
-		return 1;
-	#endif
-}
-#if defined _ALS_OnPlayerDeath
-    #undef OnPlayerDeath
-#else
-    #define _ALS_OnPlayerDeath
-#endif
-#define OnPlayerDeath SS_OnPlayerDeath
-#if defined SS_OnPlayerDeath
-	forward SS_OnPlayerDeath(playerid, killerid, reason);
-#endif
-
-public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
-{
-	// Process damage
-	if (! SS_ProcessDamage(playerid, issuerid, amount, weaponid, bodypart))
-	{
-		ClearAnimations(issuerid);
-	    return 0;
-	}
-
-	if (issuerid != INVALID_PLAYER_ID)
-	{
-		// Check for OnPlayerWeaponShot, if it returned 0, that means no damage is given
-	    if (SS_LastShot[issuerid][SS_shotHittype] == BULLET_HIT_TYPE_PLAYER && SS_LastShot[issuerid][SS_shotHitid] == playerid)
-	    {
-	        if (! SS_LastShot[issuerid][SS_shotReturn])
-	        {
-	            SS_LastShot[issuerid][SS_shotReturn] = true;
-	            SS_LastShot[issuerid][SS_shotHitid] = -1;
-
-				#if defined SS_OnPlayerTakeDamage
-					return SS_OnPlayerTakeDamage(playerid, issuerid, amount, weaponid, bodypart);
-				#else
-					return 1;
-				#endif
-	        }
-	    }
-		// Check for same teams
-		if ((SS_Teamid[playerid] != NO_TEAM || SS_Teamid[issuerid] != NO_TEAM) && SS_Teamid[playerid] == SS_Teamid[issuerid])
-		{
-			#if defined SS_OnPlayerTakeDamage
-				return SS_OnPlayerTakeDamage(playerid, issuerid, amount, weaponid, bodypart);
-			#else
-				return 1;
-			#endif
-		}
-	}
-
-	// If the damage is valid, reduce armour or health
-	if (weaponid == WEAPON_COLLISION)
-	{
-	    SetPlayerHealth(playerid, SS_Health[playerid] - amount);
-	}
-	else
-	{
-		if (SS_Armour[playerid])
-		{
-		    SetPlayerArmour(playerid, SS_Armour[playerid] - amount);
-		}
-		else
-		{
-	    	SetPlayerHealth(playerid, SS_Health[playerid] - amount);
-	    }
-    }
-
-	#if defined SS_OnPlayerTakeDamage
-		return SS_OnPlayerTakeDamage(playerid, issuerid, amount, weaponid, bodypart);
-	#else
-		return 1;
-	#endif
-}
-#if defined _ALS_OnPlayerTakeDamage
-    #undef OnPlayerTakeDamage
-#else
-    #define _ALS_OnPlayerTakeDamage
-#endif
-#define OnPlayerTakeDamage SS_OnPlayerTakeDamage
-#if defined SS_OnPlayerTakeDamage
-	forward SS_OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart);
-#endif
-
 public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY, Float:fZ)
 {
 	SS_LastShot[playerid][SS_shotHits] = 0;
@@ -1719,11 +1144,7 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY
 			return 0;
 		}
 
-		new bool:ret = true;
-	    #if defined SS_OnPlayerWeaponShot
-			ret = bool:SS_OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, fX, fY, fZ);
-		#endif
-		if (ret)
+		if (SS_LastShot[playerid][SS_shotReturn])
 		{
 			for (new i, j = GetPlayerPoolSize(); i <= j; i++)
 			{
@@ -1764,12 +1185,7 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY
 		}
 	}
 
-
-	#if defined SS_OnPlayerWeaponShot
-		return SS_OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, fX, fY, fZ);
-	#else
-		return 1;
-	#endif
+	return SS_LastShot[playerid][SS_shotReturn];
 }
 #if defined _ALS_OnPlayerWeaponShot
     #undef OnPlayerWeaponShot
@@ -1781,6 +1197,642 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY
 	forward SS_OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY, Float:fZ);
 #endif
 
+stock static SS_AverageHitRate(playerid, hits, &multiple_weapons = 0)// Credits to Slice
+{
+	new total = 0;
+	new idx = SS_LastHitIdx[playerid];
+
+	multiple_weapons = false;
+
+	for (new i = hits - 2; i >= 0; i--)
+	{
+		new prev_idx = (idx - i - 1) % sizeof(SS_LastHitTicks[]);
+
+		// JIT plugin fix
+		if (prev_idx < 0)
+		{
+			prev_idx += sizeof(SS_LastHitTicks[]);
+		}
+
+		new prev = SS_LastHitTicks[playerid][prev_idx];
+		new prev_weap = SS_LastHitWeapons[playerid][prev_idx];
+		new this_idx = (idx - i) % sizeof(SS_LastHitTicks[]);
+
+		// JIT plugin fix
+		if (this_idx < 0)
+		{
+			this_idx += sizeof(SS_LastHitTicks[]);
+		}
+
+		if (prev_weap != SS_LastHitWeapons[playerid][this_idx])
+		{
+			multiple_weapons = true;
+		}
+
+		total += SS_LastHitTicks[playerid][this_idx] - prev;
+	}
+
+	return total / (hits - 1);
+}
+
+stock static bool:SS_ProcessDamage(&playerid, &issuerid, &Float:amount, &weaponid, &bodypart) //Credits to Slice, Modified by me
+{
+	// Amount can't be negative
+	if (amount < 0.0)
+	{
+	    return false;
+	}
+
+    // Prevent climb bug
+	if (weaponid == WEAPON_COLLISION)
+	{
+		if (1061 <= GetPlayerAnimationIndex(playerid) <= 1067)
+		{
+			return false;
+		}
+	}
+
+    // Prevent stealth knives, can be any weapon
+	if (_:amount == _:1833.33154296875)
+	{
+		return false;
+	}
+
+	// Detect original weapons type
+    if (issuerid != INVALID_PLAYER_ID)
+    {
+        switch (weaponid)
+        {
+            case WEAPON_COLT45..WEAPON_SNIPER, WEAPON_SPRAYCAN, WEAPON_FIREEXTINGUISHER:
+            {
+				if (_:amount == _:2.6400001049041748046875)
+				{
+					bodypart = 3;
+					weaponid = WEAPON_PISTOLWHIP;
+				}
+			}
+			case WEAPON_HELIBLADES:
+			{
+			    if (_:amount != _:330.0)
+			    {
+			        weaponid = WEAPON_CARPARK;
+			    }
+			}
+		}
+	}
+
+	if (weaponid != WEAPON_PISTOLWHIP)
+	{
+		switch (amount)
+		{
+			case 1.32000005245208740234375,
+			     1.650000095367431640625,
+			     1.980000019073486328125,
+			     2.3100001811981201171875,
+			     2.6400001049041748046875,
+			     2.9700000286102294921875,
+			     3.96000003814697265625,
+			     4.28999996185302734375,
+			     4.62000036239624023437,
+			     5.280000209808349609375:
+		 	{
+				if (! ((WEAPON_UNARMED <= weaponid <= WEAPON_KATANA) || (WEAPON_DILDO <= weaponid <= WEAPON_CANE) || weaponid == WEAPON_PISTOLWHIP))
+				{
+					weaponid = WEAPON_UNARMED;
+				}
+			}
+
+			case 6.6000003814697265625:
+			{
+				if (! ((WEAPON_UNARMED <= weaponid <= WEAPON_KATANA) || (WEAPON_DILDO <= weaponid <= WEAPON_CANE) || weaponid == WEAPON_PISTOLWHIP))
+				{
+					switch (weaponid)
+					{
+						case WEAPON_UZI, WEAPON_TEC9, WEAPON_CHAINSAW, WEAPON_SHOTGUN, WEAPON_SAWEDOFF:
+					 	{
+					 	}
+						default:
+						{
+							weaponid = WEAPON_UNARMED;
+						}
+					}
+				}
+			}
+
+			case 54.12000274658203125:
+			{
+				if (! ((WEAPON_UNARMED <= weaponid <= WEAPON_KATANA) || (WEAPON_DILDO <= weaponid <= WEAPON_CANE) || weaponid == WEAPON_PISTOLWHIP))
+				{
+					weaponid = WEAPON_UNARMED;
+					amount = 1.32000005245208740234375;
+				}
+			}
+		}
+	}
+
+	// Detecting what caused the damage
+	if (weaponid == WEAPON_EXPLOSION)
+	{
+		if (issuerid != INVALID_PLAYER_ID && GetPlayerState(issuerid) != PLAYER_STATE_DRIVER && SS_LastExplosive[issuerid])
+		{
+			weaponid = SS_LastExplosive[playerid];
+		}
+	}
+
+	// Check for valid range shots
+	if (issuerid != INVALID_PLAYER_ID)
+	{
+		new Float:distance;
+		if (SS_WeaponRange[weaponid] != 0.0)
+		{
+			new Float:x, Float:y, Float:z;
+			GetPlayerPos(issuerid, x, y, z);
+
+			distance = GetPlayerDistanceFromPoint(playerid, x, y, z);
+			if (distance > SS_WeaponRange[weaponid] + 2.0)
+		  	{
+				return false;
+			}
+		}
+	}
+
+	// Adjust damage from animation bugs
+	switch (amount)
+	{
+		case 3.63000011444091796875,
+		     5.940000057220458984375,
+		     5.610000133514404296875:
+	 	{
+			amount = 2.6400001049041748046875;
+		}
+
+		case 3.30000019073486328125:
+		{
+			if (weaponid != WEAPON_SHOTGUN && weaponid != WEAPON_SAWEDOFF)
+			{
+				amount = 2.6400001049041748046875;
+			}
+		}
+
+		case 4.950000286102294921875:
+		{
+			if ((WEAPON_UNARMED <= weaponid <= WEAPON_KATANA) || (WEAPON_DILDO <= weaponid <= WEAPON_CANE) || weaponid == WEAPON_PISTOLWHIP)
+			{
+				amount = 2.6400001049041748046875;
+			}
+		}
+
+		case 6.270000457763671875,
+		     6.93000030517578125,
+		     7.2600002288818359375,
+		     7.9200000762939453125,
+		     8.5799999237060546875,
+		     9.24000072479248046875,
+		     11.88000011444091796875,
+		     11.22000026702880859375:
+	 	{
+			amount = 2.6400001049041748046875;
+		}
+
+		case 9.90000057220458984375:
+		{
+			switch (weaponid)
+			{
+				case WEAPON_VEHICLE, WEAPON_VEHICLE_M4, WEAPON_AK47, WEAPON_M4, WEAPON_SHOTGUN, WEAPON_SAWEDOFF, WEAPON_SHOTGSPA:
+				{
+				}
+				default:
+				{
+					amount = 6.6000003814697265625;
+				}
+			}
+		}
+	}
+
+	// Check chainsaw damage
+	if (weaponid == WEAPON_CHAINSAW)
+	{
+		switch (amount)
+		{
+			case 6.6000003814697265625,
+			     13.5300006866455078125,
+			     16.1700000762939453125,
+			     26.40000152587890625,
+			     27.060001373291015625:
+		 	{
+			}
+
+			default:
+			{
+				amount = SS_WeaponDamage[WEAPON_CHAINSAW];
+			}
+		}
+	}
+
+	switch (weaponid)
+	{
+	    case WEAPON_EXPLOSION:
+	    {
+	        // Explosions do at most 82.5 damage. This will later be multipled by the damage value
+			amount /= 82.5;
+	    }
+
+		case WEAPON_COLLISION:
+		{
+		    // Collision damage is never greater than 165
+			if (amount > 165.0)
+			{
+				amount = 1.0;
+			}
+			else
+			{
+				amount /= 165.0;
+			}
+		}
+
+		case WEAPON_DROWN:
+		{
+		    // Drowing can max cause -10.0 health
+		    if (amount > 10.0)
+			{
+				amount = 10.0;
+			}
+		}
+	}
+
+	// Adjust damage for shotguns
+	new Float:bullets;
+	switch (weaponid)
+	{
+		// The spas shotguns shoot 8 bullets, each inflicting 4.95 damage
+		case WEAPON_SHOTGSPA:
+		{
+			bullets = amount / 4.950000286102294921875;
+
+			if (8.0 - bullets < -0.05)
+			{
+				return false;
+			}
+		}
+
+		// Shotguns and sawed-off shotguns shoot 15 bullets, each inflicting 3.3 damage
+		case WEAPON_SHOTGUN, WEAPON_SAWEDOFF:
+		{
+			bullets = amount / 3.30000019073486328125;
+
+			if (15.0 - bullets < -0.05)
+			{
+				return false;
+			}
+		}
+	}
+
+	if (_:bullets)
+	{
+		new Float:f = floatfract(bullets);
+
+		// The damage for each bullet has been tampered with
+		if (f > 0.01 && f < 0.99)
+		{
+			return false;
+		}
+
+		// Divide the damage amount by the number of bullets
+		amount /= bullets;
+	}
+	
+	// Set amount for high rate weapons below or equal to 1.
+	switch (weaponid)
+	{
+		case WEAPON_FLAMETHROWER, WEAPON_DROWN, WEAPON_CARPARK, WEAPON_SPRAYCAN, WEAPON_FIREEXTINGUISHER:
+	 	{
+			if (amount > 1.0)
+			{
+				amount = 1.0;
+			}
+		}
+	}
+
+	// If the amount is not greater default damage
+	new Float:def_amount = 0.0;
+	switch (weaponid)
+	{
+		case WEAPON_COLT45, WEAPON_MP5:
+		{
+			def_amount = 8.25;
+		}
+		case WEAPON_SILENCED:
+		{
+			def_amount = 13.200000762939453125;
+		}
+		case WEAPON_DEAGLE:
+		{
+			def_amount = 46.200000762939453125;
+		}
+		case WEAPON_UZI, WEAPON_TEC9:
+		{
+			def_amount = 6.6000003814697265625;
+		}
+		case WEAPON_AK47, WEAPON_M4, WEAPON_VEHICLE_M4:
+		{
+			def_amount = 9.90000057220458984375;
+		}
+		case WEAPON_RIFLE:
+		{
+			def_amount = 24.7500019073486328125;
+		}
+		case WEAPON_SNIPER:
+		{
+			def_amount = 41.25;
+		}
+		case WEAPON_MINIGUN, WEAPON_VEHICLE_MINIGUN:
+		{
+			def_amount = 46.200000762939453125;
+		}
+		case WEAPON_VEHICLE:
+		{
+			def_amount = 9.90000057220458984375;
+		}
+	}
+	if (_:def_amount && _:def_amount != _:amount)
+	{
+		return false;
+	}
+
+	// Set final amount
+	switch (weaponid)
+	{
+	    case WEAPON_UNARMED..WEAPON_GRENADE,
+			 WEAPON_ROCKETLAUNCHER..WEAPON_FLAMETHROWER,
+			 WEAPON_SATCHEL,
+			 WEAPON_EXPLOSION,
+			 WEAPON_COLLISION:
+		{
+		    if (_:SS_WeaponDamage[weaponid] != _:1.0)
+		    {
+		    	amount *= SS_WeaponDamage[weaponid];
+		    }
+		}
+
+		case WEAPON_MOLTOV,
+			 WEAPON_COLT45..WEAPON_DEAGLE,
+			 WEAPON_UZI..WEAPON_SNIPER,
+			 WEAPON_MINIGUN,
+			 WEAPON_SPRAYCAN, WEAPON_FIREEXTINGUISHER,
+			 WEAPON_PISTOLWHIP, WEAPON_VEHICLE, WEAPON_HELIBLADES:
+		{
+		    amount = SS_WeaponDamage[weaponid];
+		}
+
+		case WEAPON_SHOTGUN..WEAPON_SHOTGSPA:
+	 	{
+	 	    amount = SS_WeaponDamage[weaponid] * bullets;
+		}
+	}
+
+	// Valid damage was given
+	return true;
+}
+
+public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
+{
+	new tick = GetTickCount();
+	if (tick == 0) tick = 1;
+
+	new idx = (SS_LastHitIdx[playerid] + 1) % sizeof(SS_LastHitTicks[]);
+
+	// JIT plugin fix
+	if (idx < 0)
+	{
+		idx += sizeof(SS_LastHitTicks[]);
+	}
+
+	SS_LastHitIdx[playerid] = idx;
+	SS_LastHitTicks[playerid][idx] = tick;
+	SS_LastHitWeapons[playerid][idx] = weaponid;
+
+	// Check for rapid fire / Bullet flood
+	new multiple_weapons;
+	new avg_rate = SS_AverageHitRate(playerid, 5, multiple_weapons);
+
+	// Hit issue flood?
+	// Could be either a cheat or just lag
+	if (avg_rate != -1)
+	{
+		if (multiple_weapons)
+		{
+			if (avg_rate < 100)
+			{
+				ClearAnimations(playerid);
+				return 0;
+			}
+		}
+		else if (SS_WeaponShootRate[weaponid] - avg_rate > 20)
+		{
+			ClearAnimations(playerid);
+			return 0;
+		}
+	}
+
+	// Additional checks
+	if (damagedid != INVALID_PLAYER_ID)
+	{
+		// Check for OnPlayerWeaponShot, if it returned 0, that means no damage is given
+	    if (SS_LastShot[playerid][SS_shotHittype] == BULLET_HIT_TYPE_PLAYER && SS_LastShot[playerid][SS_shotHitid] == damagedid)
+	    {
+	        if (! SS_LastShot[playerid][SS_shotReturn])
+	        {
+	            SS_LastShot[playerid][SS_shotReturn] = true;
+	            SS_LastShot[playerid][SS_shotHitid] = -1;
+
+				#if defined SS_OnPlayerGiveDamage
+					return SS_OnPlayerGiveDamage(playerid, damagedid, amount, weaponid, bodypart);
+				#else
+					return 1;
+				#endif
+	        }
+	    }
+		// Check for same teams
+		if ((SS_Teamid[playerid] != NO_TEAM || SS_Teamid[damagedid] != NO_TEAM) && SS_Teamid[playerid] == SS_Teamid[damagedid])
+		{
+		    #if defined SS_OnPlayerGiveDamage
+				return SS_OnPlayerGiveDamage(playerid, damagedid, amount, weaponid, bodypart);
+			#else
+				return 1;
+			#endif
+		}
+	}
+
+	// Detect invalid shots fired, multiple hits and so on
+    if (((WEAPON_COLT45 <= weaponid <= WEAPON_SNIPER) || weaponid == WEAPON_MINIGUN) && _:amount != _:2.6400001049041748046875 && ! (IsPlayerInAnyVehicle(playerid) && GetPlayerVehicleSeat(playerid) == 0))
+	{
+		if (WEAPON_SHOTGUN <= weaponid <= WEAPON_SHOTGSPA)
+		{
+			// Let's assume someone won't hit 3 players with 1 shotgun shot, and that one OnPlayerWeaponShot can be out of sync
+			if (SS_LastShot[playerid][SS_shotHits] >= 3)
+			{
+				SS_LastShot[playerid][SS_shotHits] += 1;
+				ClearAnimations(playerid);
+			    return 0;
+			}
+		}
+		else if (SS_LastShot[playerid][SS_shotHits] > 0)
+		{
+			// Sniper doesn't always send OnPlayerWeaponShot
+			if (SS_LastShot[playerid][SS_shotHits] > 4 && weaponid != WEAPON_SNIPER)
+			{
+				SS_LastShot[playerid][SS_shotHits] += 1;
+				ClearAnimations(playerid);
+			    return 0;
+			}
+		}
+
+		SS_LastShot[playerid][SS_shotHits] += 1;
+	}
+
+	#if defined SS_OnPlayerGiveDamage
+		return SS_OnPlayerGiveDamage(playerid, damagedid, amount, weaponid, bodypart);
+	#else
+		return 1;
+	#endif
+}
+#if defined _ALS_OnPlayerGiveDamage
+    #undef OnPlayerGiveDamage
+#else
+    #define _ALS_OnPlayerGiveDamage
+#endif
+#define OnPlayerGiveDamage SS_OnPlayerGiveDamage
+#if defined SS_OnPlayerGiveDamage
+	forward SS_OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart);
+#endif
+
+public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
+{
+	// Process damage
+	if (weaponid != WEAPON_KNIFE && _:amount != _:0.0)
+	{
+		if (! SS_ProcessDamage(playerid, issuerid, amount, weaponid, bodypart))
+		{
+			ClearAnimations(issuerid);
+		    return 0;
+		}
+	}
+
+	if (issuerid != INVALID_PLAYER_ID)
+	{
+		// Check for OnPlayerWeaponShot, if it returned 0, that means no damage is given
+	    if (SS_LastShot[issuerid][SS_shotHittype] == BULLET_HIT_TYPE_PLAYER && SS_LastShot[issuerid][SS_shotHitid] == playerid)
+	    {
+	        if (! SS_LastShot[issuerid][SS_shotReturn])
+	        {
+	            SS_LastShot[issuerid][SS_shotReturn] = true;
+	            SS_LastShot[issuerid][SS_shotHitid] = -1;
+
+				#if defined SS_OnPlayerTakeDamage
+					return SS_OnPlayerTakeDamage(playerid, issuerid, amount, weaponid, bodypart);
+				#else
+					return 1;
+				#endif
+	        }
+	    }
+		// Check for same teams
+		if ((SS_Teamid[playerid] != NO_TEAM || SS_Teamid[issuerid] != NO_TEAM) && SS_Teamid[playerid] == SS_Teamid[issuerid])
+		{
+			#if defined SS_OnPlayerTakeDamage
+				return SS_OnPlayerTakeDamage(playerid, issuerid, amount, weaponid, bodypart);
+			#else
+				return 1;
+			#endif
+		}
+	}
+
+	// Process knife stab
+	if (weaponid == WEAPON_KNIFE && _:amount == _:0.0)
+	{
+	    if (GetPVarType(playerid, "SS_Knifed") == PLAYER_VARTYPE_NONE)
+		{
+			SetPVarInt(playerid, "SS_Knifed", SetTimerEx("SS_OnPlayerKnifed", 4000 - GetPlayerPing(playerid), false, "ii", issuerid, playerid));
+		}
+		else
+		{
+		    #if defined SS_OnPlayerTakeDamage
+				return SS_OnPlayerTakeDamage(playerid, issuerid, amount, weaponid, bodypart);
+			#else
+				return 1;
+			#endif
+		}
+	}
+
+	// If the damage is valid, reduce armour or health
+	if (weaponid == WEAPON_COLLISION)
+	{
+	    SetPlayerHealth(playerid, SS_Health[playerid] - amount);
+	}
+	else
+	{
+		if (SS_Armour[playerid])
+		{
+		    SetPlayerArmour(playerid, SS_Armour[playerid] - amount);
+		}
+		else
+		{
+	    	SetPlayerHealth(playerid, SS_Health[playerid] - amount);
+	    }
+    }
+
+	#if defined SS_OnPlayerTakeDamage
+		return SS_OnPlayerTakeDamage(playerid, issuerid, amount, weaponid, bodypart);
+	#else
+		return 1;
+	#endif
+}
+#if defined _ALS_OnPlayerTakeDamage
+    #undef OnPlayerTakeDamage
+#else
+    #define _ALS_OnPlayerTakeDamage
+#endif
+#define OnPlayerTakeDamage SS_OnPlayerTakeDamage
+#if defined SS_OnPlayerTakeDamage
+	forward SS_OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart);
+#endif
+
+forward SS_OnPlayerKnifed(playerid, killerid);
+public  SS_OnPlayerKnifed(playerid, killerid)
+{
+	SetPlayerHealth(playerid, 0.0);
+	SS_KnifedBy[playerid] = killerid;
+
+	DeletePVar(playerid, "SS_Knifed");
+}
+
+public OnPlayerDeath(playerid, killerid, reason)
+{
+	SS_Health[playerid] = 0.0;
+	SS_Armour[playerid] = 0.0;
+
+	// Playerid was knifed
+	if (SS_KnifedBy[playerid] != INVALID_PLAYER_ID)
+	{
+	    killerid = SS_KnifedBy[playerid];
+	    reason = 4;
+	}
+
+	#if defined SS_OnPlayerDeath
+		return SS_OnPlayerDeath(playerid, killerid, reason);
+	#else
+		return 1;
+	#endif
+}
+#if defined _ALS_OnPlayerDeath
+    #undef OnPlayerDeath
+#else
+    #define _ALS_OnPlayerDeath
+#endif
+#define OnPlayerDeath SS_OnPlayerDeath
+#if defined SS_OnPlayerDeath
+	forward SS_OnPlayerDeath(playerid, killerid, reason);
+#endif
+
 public OnPlayerUpdate(playerid)
 {
 	if (SS_Update[playerid])
@@ -1788,11 +1840,11 @@ public OnPlayerUpdate(playerid)
 		// Check for health hack
 		new Float:health;
 		OLD_GetPlayerHealth(playerid, health);
-		if (_:health < 100.0 && _:SS_Health[playerid] > 100.0)
+		if (SS_Health[playerid] > 100.0 && health < 100.0)
 		{
 			OLD_SetPlayerHealth(playerid, 100.0);
 		}
-		else if (_:health != _:SS_Health[playerid])
+		else if (health != SS_Health[playerid])
 		{
 		    OLD_SetPlayerHealth(playerid, SS_Health[playerid]);
 		}
@@ -1800,11 +1852,11 @@ public OnPlayerUpdate(playerid)
 		// Check for armour hack
 		new Float:armour;
 		OLD_GetPlayerArmour(playerid, armour);
-		if (_:armour < 100.0 && _:SS_Armour[playerid] > 100.0)
+		if (SS_Armour[playerid] > 100.0 && armour < 100.0)
 		{
 			OLD_SetPlayerArmour(playerid, 100.0);
 		}
-		else if (_:armour != _:SS_Armour[playerid])
+		else if (armour != SS_Armour[playerid])
 		{
 		    OLD_SetPlayerArmour(playerid, SS_Armour[playerid]);
 		}
@@ -1845,7 +1897,7 @@ public OnPlayerUpdate(playerid)
 						{
 							SS_LastExplosive[playerid] = SS_LastClickWeapon[playerid];
 						}
-					
+
 						slot = SS_GetWeaponSlot(SS_LastClickWeapon[playerid]);
 						SS_WeaponData[playerid][slot][1]--;
 						if (! SS_WeaponData[playerid][slot][1])
@@ -1853,7 +1905,7 @@ public OnPlayerUpdate(playerid)
 							SS_WeaponData[playerid][slot][0] = 0;
 							SS_WeaponData[playerid][slot][1] = 0;
 						}
-						
+
 						SS_LastClickWeapon[playerid] = 0;
 					}
 				}
@@ -1862,7 +1914,7 @@ public OnPlayerUpdate(playerid)
 		if (! SS_LastClickWeapon[playerid])
 		{
 			slot = SS_GetWeaponSlot(weapon);
-			
+
 			if (SS_WeaponData[playerid][slot][0] != weapon)
 			{
 				OLD_SetPlayerAmmo(playerid, weapon, 0);
@@ -1951,7 +2003,7 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 				}
 			}
 		#endif
-		
+
 		if (newkeys & KEY_FIRE)
 		{
 		    new weaponid = GetPlayerWeapon(playerid);
@@ -1972,7 +2024,7 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 			}
 		}
 	}
-	
+
 	#if defined SS_OnPlayerKeyStateChange
 		return SS_OnPlayerKeyStateChange(playerid, newkeys, oldkeys);
 	#else
@@ -2066,13 +2118,13 @@ stock SS_AddStaticPickup(model, type, Float:X, Float:Y, Float:Z, Virtualworld)
 	    case 1240, 1242, 321..369, 371, 372:
 	    {
    		}
-     	
+
      	default:
      	{
      	    return AddStaticPickup(model, type, X, Y, Z, Virtualworld);
      	}
 	}
-	
+
 	new ret = CreatePickup(model, type, X, Y, Z, Virtualworld);
 	if (ret == -1)
 	{
@@ -2097,7 +2149,7 @@ stock SS_CreatePickup(model, type, Float:X, Float:Y, Float:Z, Virtualworld)
 	{
  		return CreatePickup(model, type, X, Y, Z, Virtualworld);
 	}
-	
+
 	switch (model)
 	{
 	    case 1240, 1242, 321..369, 371, 372:
@@ -2174,7 +2226,7 @@ public OnPlayerPickUpPickup(playerid, pickupid)
       	{
        		new weapon = SS_GetModelWeaponID(SS_StaticPickup[pickupid]);
        		new slot = SS_GetWeaponSlot(weapon);
-       		
+
        		switch (weapon)
 		    {
 		        case WEAPON_BRASSKNUCKLE..WEAPON_CANE, 44, 45, WEAPON_PARACHUTE:
@@ -2222,7 +2274,7 @@ public OnPlayerPickUpPickup(playerid, pickupid)
     				SS_WeaponData[playerid][slot][1] += 100;
 		        }
 		    }
-       		
+
          	if (weapon != -1)
           	{
 			  	SS_WeaponData[playerid][slot][0] = weapon;

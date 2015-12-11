@@ -8,7 +8,7 @@
 * ===============
 * LIBRARY
 * ===============
-* Server sieded include (serversided.inc) - v1.4 [BETA]
+* Server sieded include (serversided.inc) - v1.5 [BETA]
 * Makes all the client side features to server scripted parts (covers Health, Armour, Money, Weapon, Ammo and Vehicle Health).
 *
 * ===============
@@ -16,6 +16,7 @@
 * ===============
 * Gammix - Include creator
 * Slice - Damage processing function, weapons array and average hit/shoot functions to catch rapid fire
+* SecretBoss - Testing the include
 *
 */
 
@@ -1327,6 +1328,14 @@ stock static bool:SS_ProcessDamage(&playerid, &issuerid, &Float:amount, &weaponi
 					amount = 1.32000005245208740234375;
 				}
 			}
+			
+			default:
+			{
+			    if ((WEAPON_UNARMED <= weaponid <= WEAPON_KATANA) || (WEAPON_DILDO <= weaponid <= WEAPON_CANE) || weaponid == WEAPON_PISTOLWHIP)
+				{
+				    amount = 1.0;
+				}
+			}
 		}
 	}
 
@@ -1594,6 +1603,22 @@ stock static bool:SS_ProcessDamage(&playerid, &issuerid, &Float:amount, &weaponi
 	return true;
 }
 
+stock static bool:HasSameTeam(playerid, otherid)
+{
+	if (otherid < 0 || otherid >= MAX_PLAYERS || playerid < 0 || playerid >= MAX_PLAYERS)
+	{
+		return false;
+	}
+
+	if (SS_Teamid[playerid] == NO_TEAM || SS_Teamid[otherid] == NO_TEAM)
+	{
+		return false;
+	}
+
+	return bool:(SS_Teamid[playerid] == SS_Teamid[otherid]);
+}
+
+
 public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
 {
 	new tick = GetTickCount();
@@ -1653,7 +1678,7 @@ public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
 	        }
 	    }
 		// Check for same teams
-		if ((SS_Teamid[playerid] != NO_TEAM || SS_Teamid[damagedid] != NO_TEAM) && SS_Teamid[playerid] == SS_Teamid[damagedid])
+		if (HasSameTeam(playerid, damagedid))
 		{
 		    #if defined SS_OnPlayerGiveDamage
 				return SS_OnPlayerGiveDamage(playerid, damagedid, amount, weaponid, bodypart);
@@ -1709,7 +1734,7 @@ public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
 public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
 {
 	// Process damage
-	if (weaponid != WEAPON_KNIFE && _:amount != _:0.0)
+	if (weaponid != WEAPON_KNIFE && amount > SS_WeaponDamage[WEAPON_KNIFE])
 	{
 		if (! SS_ProcessDamage(playerid, issuerid, amount, weaponid, bodypart))
 		{
@@ -1736,7 +1761,7 @@ public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
 	        }
 	    }
 		// Check for same teams
-		if ((SS_Teamid[playerid] != NO_TEAM || SS_Teamid[issuerid] != NO_TEAM) && SS_Teamid[playerid] == SS_Teamid[issuerid])
+		if (HasSameTeam(playerid, issuerid))
 		{
 			#if defined SS_OnPlayerTakeDamage
 				return SS_OnPlayerTakeDamage(playerid, issuerid, amount, weaponid, bodypart);
@@ -1749,9 +1774,9 @@ public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
 	// Process knife stab
 	if (weaponid == WEAPON_KNIFE && _:amount == _:0.0)
 	{
-	    if (GetPVarType(playerid, "SS_Knifed") == PLAYER_VARTYPE_NONE)
+	    if (GetPVarType(playerid, "SS_OnPlayerKnifed") == PLAYER_VARTYPE_NONE)
 		{
-			SetPVarInt(playerid, "SS_Knifed", SetTimerEx("SS_OnPlayerKnifed", 4000 - GetPlayerPing(playerid), false, "ii", issuerid, playerid));
+			SetPVarInt(playerid, "SS_OnPlayerKnifed", SetTimerEx("SS_OnPlayerKnifed", 3000 + GetPlayerPing(playerid), false, "ii", playerid, issuerid));
 		}
 		else
 		{
@@ -1769,14 +1794,28 @@ public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
 	    SetPlayerHealth(playerid, SS_Health[playerid] - amount);
 	}
 	else
-	{
-		if (SS_Armour[playerid])
-		{
-		    SetPlayerArmour(playerid, SS_Armour[playerid] - amount);
-		}
-		else
-		{
-	    	SetPlayerHealth(playerid, SS_Health[playerid] - amount);
+	{   
+	    if (amount >= SS_Armour[playerid] + SS_Health[playerid])
+	    {
+		    SetPlayerArmour(playerid, 0.0);
+	    	SetPlayerHealth(playerid, 0.0);
+	    }
+	    else
+	    {
+	        if (SS_Armour[playerid])
+			{
+			    new Float:loss = SS_Armour[playerid] - amount;
+   				SetPlayerArmour(playerid, SS_Armour[playerid] - amount);
+
+				if (loss < 0.0)
+				{
+				    SetPlayerHealth(playerid, SS_Health[playerid] + loss);
+				}
+			}
+			else
+			{
+			    SetPlayerHealth(playerid, SS_Health[playerid] - amount);
+			}
 	    }
     }
 
@@ -1799,10 +1838,21 @@ public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
 forward SS_OnPlayerKnifed(playerid, killerid);
 public  SS_OnPlayerKnifed(playerid, killerid)
 {
-	SetPlayerHealth(playerid, 0.0);
-	SS_KnifedBy[playerid] = killerid;
+	CallRemoteFunction("SS_OnPlayerKnifeComplete", "ii", playerid, killerid);
 
-	DeletePVar(playerid, "SS_Knifed");
+	DeletePVar(playerid, "SS_OnPlayerKnifed");
+}
+
+forward SS_OnPlayerKnifeComplete(playerid, killerid);
+public  SS_OnPlayerKnifeComplete(playerid, killerid)
+{
+	SS_Armour[playerid] = 0.0;
+	OLD_SetPlayerArmour(playerid, 0.0);
+	
+	SS_Health[playerid] = 0.0;
+    OLD_SetPlayerHealth(playerid, 0.0);
+	
+	SS_KnifedBy[playerid] = killerid;
 }
 
 public OnPlayerDeath(playerid, killerid, reason)

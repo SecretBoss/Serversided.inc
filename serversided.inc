@@ -907,7 +907,8 @@ public OnPlayerRequestSpawn(playerid)
 		}
 
 		// Set class info team
-		SetPlayerTeam(playerid, SS_ClassData[SS_Classid[playerid]][SS_classTeam]);
+		SS_Teamid[playerid] = SS_ClassData[playerid][SS_classTeam];
+		OLD_SetPlayerTeam(playerid, 0);
 	}
 
 	return ret;
@@ -962,7 +963,8 @@ public OnPlayerSpawn(playerid)
 	}
 
 	// Set spawn info team
-	SetPlayerTeam(playerid, SS_SpawnData[playerid][SS_spawnTeam]);
+	SS_Teamid[playerid] = SS_SpawnData[playerid][SS_spawnTeam];
+	OLD_SetPlayerTeam(playerid, 0);
 
 	#if defined SS_OnPlayerSpawn
 		return SS_OnPlayerSpawn(playerid);
@@ -1328,12 +1330,12 @@ stock static bool:SS_ProcessDamage(&playerid, &issuerid, &Float:amount, &weaponi
 					amount = 1.32000005245208740234375;
 				}
 			}
-			
+
 			default:
 			{
 			    if ((WEAPON_UNARMED <= weaponid <= WEAPON_KATANA) || (WEAPON_DILDO <= weaponid <= WEAPON_CANE) || weaponid == WEAPON_PISTOLWHIP)
 				{
-				    amount = 1.0;
+				    amount = 1.32000005245208740234375;
 				}
 			}
 		}
@@ -1509,7 +1511,7 @@ stock static bool:SS_ProcessDamage(&playerid, &issuerid, &Float:amount, &weaponi
 		// Divide the damage amount by the number of bullets
 		amount /= bullets;
 	}
-	
+
 	// Set amount for high rate weapons below or equal to 1.
 	switch (weaponid)
 	{
@@ -1565,7 +1567,7 @@ stock static bool:SS_ProcessDamage(&playerid, &issuerid, &Float:amount, &weaponi
 	}
 	if (_:def_amount && _:def_amount != _:amount)
 	{
-		return false;
+  		return false;
 	}
 
 	// Set final amount
@@ -1605,11 +1607,6 @@ stock static bool:SS_ProcessDamage(&playerid, &issuerid, &Float:amount, &weaponi
 
 stock static bool:HasSameTeam(playerid, otherid)
 {
-	if (otherid < 0 || otherid >= MAX_PLAYERS || playerid < 0 || playerid >= MAX_PLAYERS)
-	{
-		return false;
-	}
-
 	if (SS_Teamid[playerid] == NO_TEAM || SS_Teamid[otherid] == NO_TEAM)
 	{
 		return false;
@@ -1794,7 +1791,7 @@ public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
 	    SetPlayerHealth(playerid, SS_Health[playerid] - amount);
 	}
 	else
-	{   
+	{
 	    if (amount >= SS_Armour[playerid] + SS_Health[playerid])
 	    {
 		    SetPlayerArmour(playerid, 0.0);
@@ -1848,10 +1845,10 @@ public  SS_OnPlayerKnifeComplete(playerid, killerid)
 {
 	SS_Armour[playerid] = 0.0;
 	OLD_SetPlayerArmour(playerid, 0.0);
-	
+
 	SS_Health[playerid] = 0.0;
     OLD_SetPlayerHealth(playerid, 0.0);
-	
+
 	SS_KnifedBy[playerid] = killerid;
 }
 

@@ -2124,27 +2124,26 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 					}
 				}
 			}
-		}
-
-		if (newkeys & KEY_FIRE)
-		{
-		    new weaponid = GetPlayerWeapon(playerid);
-			switch (weaponid)
+			else if (newkeys & KEY_FIRE)
 			{
-				case WEAPON_TEARGAS, WEAPON_MOLTOV, WEAPON_GRENADE, WEAPON_SATCHEL:
+			    new weaponid = GetPlayerWeapon(playerid);
+				switch (weaponid)
 				{
-				    if (! SS_LastClickWeapon[playerid])
-				    {
-				        SS_LastClickWeapon[playerid] = weaponid;
-				    	SS_LastClick[playerid] = GetTickCount();
-				    }
-				}
-				case WEAPON_ROCKETLAUNCHER, WEAPON_HEATSEEKER:
-				{
-				    SS_LastExplosive[playerid] = weaponid;
+					case WEAPON_TEARGAS, WEAPON_MOLTOV, WEAPON_GRENADE, WEAPON_SATCHEL:
+					{
+					    if (! SS_LastClickWeapon[playerid])
+					    {
+					        SS_LastClickWeapon[playerid] = weaponid;
+					    	SS_LastClick[playerid] = GetTickCount();
+					    }
+					}
+					case WEAPON_ROCKETLAUNCHER, WEAPON_HEATSEEKER:
+					{
+					    SS_LastExplosive[playerid] = weaponid;
+					}
 				}
 			}
-		}
+		}	
 	}
 
 	#if defined SS_OnPlayerKeyStateChange

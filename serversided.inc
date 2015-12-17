@@ -8,7 +8,7 @@
 * ===============
 * LIBRARY
 * ===============
-* Server sieded include (serversided.inc) - v1.5 [BETA]
+* Server sieded include (serversided.inc) - v1.6 [BETA]
 * Makes all the client side features to server scripted parts (covers Health, Armour, Money, Weapon, Ammo and Vehicle Health).
 *
 * ===============
@@ -29,103 +29,108 @@
 #define WEAPON_CARPARK 			52
 #define WEAPON_UNKNOWN 			55
 
-#if ! defined NO_VENDING_MACHINES
-	// All default vending machines
-	enum e_SS_VENDING_MACHINE
-	{
-		SS_vmInteriorid,
-		Float:SS_vmZHeight,
-		Float:SS_vmFrontX,
-		Float:SS_vmFrontY
-	}
-	static const Float:SS_VendingMachine[][e_SS_VENDING_MACHINE] =
-	{
-		{0, 21.98, -862.84, 1537.60},
-		{0, 25.96, 2271.72, -77.46},
-		{0, 18.95, 1278.73, 372.07},
-		{0, 15.71, 662.41, -551.16},
-		{0, 0.89,  200.01, -107.63},
-		{0, 62.24, -252.74, 2597.95},
-		{0, 62.24, -252.74, 2599.75},
-		{0, 19.12, -75.03, 1227.99},
-		{0, 18.95, -14.72, 1176.35},
-		{7, 998.58,  315.87, -140.36},
-		{17, 1000.73, 373.82, -179.14},
-		{17, 1000.73,  378.03, -178.90},
-		{17, 1000.73, 495.95, -23.32},
-		{17, 1000.73, 500.56, -2.36},
-		{17, 1000.73, 501.82, -2.42},
-		{0, 55.23, -1455.13, 2592.66},
-		{0, 23.77, 2353.17, -1357.15},
-		{0, 14.21, 2325.97, -1646.13},
-		{0, 23.35, 2140.51, -1161.53},
-		{0, 62.23, 2154.03, -1015.54},
-		{0, 12.94, 1929.73, -1772.44},
-		{1, 1000.06, 2223.36, 1602.64},
-		{1, 1000.05, 2223.20, 1606.77},
-		{1, 1000.05, 2156.90, 1606.77},
-		{1, 1000.05,  2208.90, 1607.17},
-		{1, 1000.06, 2156.84, 1607.87},
-		{1, 1000.06, 2202.43, 1618.00},
-		{1, 1000.06, 2209.24, 1620.21},
-		{3, 1020.07, 330.67, 177.50},
-		{3, 1020.07, 331.92, 177.50},
-		{3, 1008.47, 351.90, 206.08},
-		{3, 1008.47, 361.54, 159.61},
-		{3, 1020.07, 371.59, 177.45},
-		{3, 1008.47, 374.89, 187.97},
-		{2, 1061.09,  2575.70, -1284.44},
-		{15,1025.90,  2224.20, -1153.43},
-		{0, 15.15,  1153.72, -1460.90},
-		{0, 12.96, 2480.84, -1958.27},
-		{0, 12.92, 2060.11, -1898.64},
-		{0, 12.94, 1729.78, -1944.04},
-		{0, 12.89, 1634.10, -2238.53},
-		{0, 15.16,  1788.21, -1369.28},
-		{0, 34.70, -2229.20, 287.41},
-		{256, 27.07,  -1981.78, 142.64},
-		{256, 34.72, -2119.93, -423.40},
-		{256, 34.72, -2119.58, -422.17},
-		{256, 34.72, -2097.29, -397.33},
-		{256, 34.72, -2092.08, -491.05},
-		{256, 34.72, -2063.27, -491.05},
-		{256, 34.72, -2005.64, -491.05},
-		{256, 34.72, -2034.46, -491.05},
-		{256, 34.72, -2068.58, -397.33},
-		{256, 34.72, -2039.86, -397.33},
-		{256, 34.72, -2011.15, -397.33},
-		{256, 10.58, -1349.11, 492.28},
-		{256, 10.58, -1349.11, 493.85},
-		{0, 10.21, 2319.99, 2531.85},
-		{0, 10.78, 2845.72, 1294.04},
-		{0, 10.21, 2503.12, 1244.69},
-		{0, 10.21, 2647.69, 1128.66},
-		{0, 44.29, -2419.21, 984.57},
-		{0, 44.29, -2419.17, 985.94},
-		{0, 10.45, 2086.77, 2071.35},
-		{0, 10.42, 1398.82, 2223.60},
-		{0, 10.21, 1659.46, 1721.85},
-		{0, 10.00, 1519.14, 1055.24},
-		{6, 1003.63, -19.05, -56.83},
-		{18, 1003.63, -16.13, -90.64},
-		{16, 1003.63, -15.11, -139.22},
-		{17, 1003.63, -32.46, -185.69},
-		{16, 1003.63, -35.74, -139.22},
-		{6, 1003.63, -36.16, -56.87},
-		{18, 1003.63, -17.56, -90.71},
-		{16, 1003.63, -16.54, -139.29},
-		{17, 1003.63, -33.89, -185.76},
-		{6, 1003.63, -19.05, -56.83},
-		{6, 1003.63, -36.16, -56.87},
-		{18, 1003.63, -16.13, -90.64},
-		{18, 1003.63, -17.56, -90.71},
-		{16, 1003.63, -16.54, -139.29},
-		{16, 1003.63, -15.11, -139.22},
-		{17, 1003.63, -33.89, -185.76},
-		{17, 1003.63, -32.46, -185.69},
-		{16, 1003.63, -35.74, -139.22}
-	};
-#endif
+enum e_SS_VENDING_MACHINE
+{
+	SS_vmModel,
+	SS_vmInterior,
+	Float:SS_vmPosX,
+	Float:SS_vmPosY,
+	Float:SS_vmPosZ,
+	Float:SS_vmRotX,
+	Float:SS_vmRotY,
+	Float:SS_vmRotZ,
+	Float:SS_vmFrontX,
+	Float:SS_vmFrontY
+}
+static const Float:SS_VendingMachine[][e_SS_VENDING_MACHINE] =
+{
+	{955, 0, -862.82, 1536.60, 21.98, 0.00, 0.00, 180.00, -862.84, 1537.60},
+	{956, 0, 2271.72, -76.46, 25.96, 0.00, 0.00, 0.00, 2271.72, -77.46},
+	{955, 0, 1277.83, 372.51, 18.95, 0.00, 0.00, 64.00, 1278.73, 372.07},
+	{956, 0, 662.42, -552.16, 15.71, 0.00, 0.00, 180.00, 662.41, -551.16},
+	{955, 0, 201.01, -107.61, 0.89, 0.00, 0.00, 270.00, 200.01, -107.63},
+	{955, 0, -253.74, 2597.95, 62.24, 0.00, 0.00, 90.00, -252.74, 2597.95},
+	{956, 0, -253.74, 2599.75, 62.24, 0.00, 0.00, 90.00, -252.74, 2599.75},
+	{956, 0, -76.03, 1227.99, 19.12, 0.00, 0.00, 90.00, -75.03, 1227.99},
+	{955, 0, -14.70, 1175.35, 18.95, 0.00, 0.00, 180.00, -14.72, 1176.35},
+	{1977, 7, 316.87, -140.35, 998.58, 0.00, 0.00, 270.00, 315.87, -140.36},
+	{1775, 17, 373.82, -178.14, 1000.73, 0.00, 0.00, 0.00, 373.82, -179.14},
+	{1776, 17, 379.03, -178.88, 1000.73, 0.00, 0.00, 270.00, 378.03, -178.90},
+	{1775, 17, 495.96, -24.32, 1000.73, 0.00, 0.00, 180.00, 495.95, -23.32},
+	{1776, 17, 500.56, -1.36, 1000.73, 0.00, 0.00, 0.00, 500.56, -2.36},
+	{1775, 17, 501.82, -1.42, 1000.73, 0.00, 0.00, 0.00, 501.82, -2.42},
+	{956, 0, -1455.11, 2591.66, 55.23, 0.00, 0.00, 180.00, -1455.13, 2592.66},
+	{955, 0, 2352.17, -1357.15, 23.77, 0.00, 0.00, 90.00, 2353.17, -1357.15},
+	{955, 0, 2325.97, -1645.13, 14.21, 0.00, 0.00, 0.00, 2325.97, -1646.13},
+	{956, 0, 2139.51, -1161.48, 23.35, 0.00, 0.00, 87.00, 2140.51, -1161.53},
+	{956, 0, 2153.23, -1016.14, 62.23, 0.00, 0.00, 127.00, 2154.03, -1015.54},
+	{955, 0, 1928.73, -1772.44, 12.94, 0.00, 0.00, 90.00, 1929.73, -1772.44},
+	{1776, 1, 2222.36, 1602.64, 1000.06, 0.00, 0.00, 90.00, 2223.36, 1602.64},
+	{1775, 1, 2222.20, 1606.77, 1000.05, 0.00, 0.00, 90.00, 2223.20, 1606.77},
+	{1775, 1, 2155.90, 1606.77, 1000.05, 0.00, 0.00, 90.00, 2156.90, 1606.77},
+	{1775, 1, 2209.90, 1607.19, 1000.05, 0.00, 0.00, 270.00, 2208.90, 1607.17},
+	{1776, 1, 2155.84, 1607.87, 1000.06, 0.00, 0.00, 90.00, 2156.84, 1607.87},
+	{1776, 1, 2202.45, 1617.00, 1000.06, 0.00, 0.00, 180.00, 2202.43, 1618.00},
+	{1776, 1, 2209.24, 1621.21, 1000.06, 0.00, 0.00, 0.00, 2209.24, 1620.21},
+	{1776, 3, 330.67, 178.50, 1020.07, 0.00, 0.00, 0.00, 330.67, 177.50},
+	{1776, 3, 331.92, 178.50, 1020.07, 0.00, 0.00, 0.00, 331.92, 177.50},
+	{1776, 3, 350.90, 206.08, 1008.47, 0.00, 0.00, 90.00, 351.90, 206.08},
+	{1776, 3, 361.56, 158.61, 1008.47, 0.00, 0.00, 180.00, 361.54, 159.61},
+	{1776, 3, 371.59, 178.45, 1020.07, 0.00, 0.00, 0.00, 371.59, 177.45},
+	{1776, 3, 374.89, 188.97, 1008.47, 0.00, 0.00, 0.00, 374.89, 187.97},
+	{1775, 2, 2576.70, -1284.43, 1061.09, 0.00, 0.00, 270.00, 2575.70, -1284.44},
+	{1775, 15, 2225.20, -1153.42, 1025.90, 0.00, 0.00, 270.00, 2224.20, -1153.43},
+	{955, 0, 1154.72, -1460.89, 15.15, 0.00, 0.00, 270.00, 1153.72, -1460.90},
+	{956, 0, 2480.85, -1959.27, 12.96, 0.00, 0.00, 180.00, 2480.84, -1958.27},
+	{955, 0, 2060.11, -1897.64, 12.92, 0.00, 0.00, 0.00, 2060.11, -1898.64},
+	{955, 0, 1729.78, -1943.04, 12.94, 0.00, 0.00, 0.00, 1729.78, -1944.04},
+	{956, 0, 1634.10, -2237.53, 12.89, 0.00, 0.00, 0.00, 1634.10, -2238.53},
+	{955, 0, 1789.21, -1369.26, 15.16, 0.00, 0.00, 270.00, 1788.21, -1369.28},
+	{956, 0, -2229.18, 286.41, 34.70, 0.00, 0.00, 180.00, -2229.20, 287.41},
+	{955, 256, -1980.78, 142.66, 27.07, 0.00, 0.00, 270.00, -1981.78, 142.64},
+	{955, 256, -2118.96, -423.64, 34.72, 0.00, 0.00, 255.00, -2119.93, -423.40},
+	{955, 256, -2118.61, -422.41, 34.72, 0.00, 0.00, 255.00, -2119.58, -422.17},
+	{955, 256, -2097.27, -398.33, 34.72, 0.00, 0.00, 180.00, -2097.29, -397.33},
+	{955, 256, -2092.08, -490.05, 34.72, 0.00, 0.00, 0.00, -2092.08, -491.05},
+	{955, 256, -2063.27, -490.05, 34.72, 0.00, 0.00, 0.00, -2063.27, -491.05},
+	{955, 256, -2005.64, -490.05, 34.72, 0.00, 0.00, 0.00, -2005.64, -491.05},
+	{955, 256, -2034.46, -490.05, 34.72, 0.00, 0.00, 0.00, -2034.46, -491.05},
+	{955, 256, -2068.56, -398.33, 34.72, 0.00, 0.00, 180.00, -2068.58, -397.33},
+	{955, 256, -2039.85, -398.33, 34.72, 0.00, 0.00, 180.00, -2039.86, -397.33},
+	{955, 256, -2011.14, -398.33, 34.72, 0.00, 0.00, 180.00, -2011.15, -397.33},
+	{955, 2048, -1350.11, 492.28, 10.58, 0.00, 0.00, 90.00, -1349.11, 492.28},
+	{956, 2048, -1350.11, 493.85, 10.58, 0.00, 0.00, 90.00, -1349.11, 493.85},
+	{955, 0, 2319.99, 2532.85, 10.21, 0.00, 0.00, 0.00, 2319.99, 2531.85},
+	{956, 0, 2845.72, 1295.04, 10.78, 0.00, 0.00, 0.00, 2845.72, 1294.04},
+	{955, 0, 2503.14, 1243.69, 10.21, 0.00, 0.00, 180.00, 2503.12, 1244.69},
+	{956, 0, 2647.69, 1129.66, 10.21, 0.00, 0.00, 0.00, 2647.69, 1128.66},
+	{1209, 0, -2420.21, 984.57, 44.29, 0.00, 0.00, 90.00, -2419.21, 984.57},
+	{1302, 0, -2420.17, 985.94, 44.29, 0.00, 0.00, 90.00, -2419.17, 985.94},
+	{955, 0, 2085.77, 2071.35, 10.45, 0.00, 0.00, 90.00, 2086.77, 2071.35},
+	{956, 0, 1398.84, 2222.60, 10.42, 0.00, 0.00, 180.00, 1398.82, 2223.60},
+	{956, 0, 1659.46, 1722.85, 10.21, 0.00, 0.00, 0.00, 1659.46, 1721.85},
+	{955, 0, 1520.14, 1055.26, 10.00, 0.00, 0.00, 270.00, 1519.14, 1055.24},
+	{1775, 6, -19.03, -57.83, 1003.63, 0.00, 0.00, 180.00, -19.05, -56.83},
+	{1775, 18, -16.11, -91.64, 1003.63, 0.00, 0.00, 180.00, -16.13, -90.64},
+	{1775, 16, -15.10, -140.22, 1003.63, 0.00, 0.00, 180.00, -15.11, -139.22},
+	{1775, 17, -32.44, -186.69, 1003.63, 0.00, 0.00, 180.00, -32.46, -185.69},
+	{1775, 16, -35.72, -140.22, 1003.63, 0.00, 0.00, 180.00, -35.74, -139.22},
+	{1776, 6, -36.14, -57.87, 1003.63, 0.00, 0.00, 180.00, -36.16, -56.87},
+	{1776, 18, -17.54, -91.71, 1003.63, 0.00, 0.00, 180.00, -17.56, -90.71},
+	{1776, 16, -16.53, -140.29, 1003.63, 0.00, 0.00, 180.00, -16.54, -139.29},
+	{1776, 17, -33.87, -186.76, 1003.63, 0.00, 0.00, 180.00, -33.89, -185.76},
+	{1775, 6, -19.03, -57.83, 1003.63, 0.00, 0.00, 180.00, -19.05, -56.83},
+	{1776, 6, -36.14, -57.87, 1003.63, 0.00, 0.00, 180.00, -36.16, -56.87},
+	{1775, 18, -16.11, -91.64, 1003.63, 0.00, 0.00, 180.00, -16.13, -90.64},
+	{1776, 18, -17.54, -91.71, 1003.63, 0.00, 0.00, 180.00, -17.56, -90.71},
+	{1776, 16, -16.53, -140.29, 1003.63, 0.00, 0.00, 180.00, -16.54, -139.29},
+	{1775, 16, -15.10, -140.22, 1003.63, 0.00, 0.00, 180.00, -15.11, -139.22},
+	{1776, 17, -33.87, -186.76, 1003.63, 0.00, 0.00, 180.00, -33.89, -185.76},
+	{1775, 17, -32.44, -186.69, 1003.63, 0.00, 0.00, 180.00, -32.46, -185.69},
+	{1775, 16, -35.72, -140.22, 1003.63, 0.00, 0.00, 180.00, -35.74, -139.22}
+};
+static SS_VendingMachineObject[sizeof(SS_VendingMachine)] = {INVALID_OBJECT_ID, ...};
+static SS_VendingMachineTimer[MAX_PLAYERS];
 
 static const Float:SS_WeaponRange[] =
 {
@@ -349,6 +354,81 @@ static SS_KnifedBy[MAX_PLAYERS];
 static bool:SS_Update[MAX_PLAYERS];
 
 static SS_StaticPickup[MAX_PICKUPS];
+
+forward __SetVendingMachine(i, set);
+public	__SetVendingMachine(i, set)
+{
+    SS_VendingMachineObject[i] = set;
+}
+
+stock EnableVendingMachines()
+{
+    for (new i, j = sizeof(SS_VendingMachine); i < j; i++)
+	{
+		#if defined STREAMER_TYPE_OBJECT
+		    if (IsValidDynamicObject(SS_VendingMachineObject[i]))
+		    {
+		        DestroyDynamicObject(SS_VendingMachineObject[i]);
+		    }
+			SS_VendingMachineObject[i] = CreateDynamicObject(SS_VendingMachine[i][SS_vmModel], SS_VendingMachine[i][SS_vmPosX], SS_VendingMachine[i][SS_vmPosY], SS_VendingMachine[i][SS_vmPosZ], SS_VendingMachine[i][SS_vmRotX], SS_VendingMachine[i][SS_vmRotY], SS_VendingMachine[i][SS_vmRotZ], .interiorid = SS_VendingMachine[i][SS_vmInterior]);
+		#else
+		    if (IsValidObject(SS_VendingMachineObject[i]))
+		    {
+		        DestroyObject(SS_VendingMachineObject[i]);
+		    }
+			SS_VendingMachineObject[i] = CreateObject(SS_VendingMachine[i][SS_vmModel], SS_VendingMachine[i][SS_vmPosX], SS_VendingMachine[i][SS_vmPosY], SS_VendingMachine[i][SS_vmPosZ], SS_VendingMachine[i][SS_vmRotX], SS_VendingMachine[i][SS_vmRotY], SS_VendingMachine[i][SS_vmRotZ]);
+		#endif
+		
+		CallRemoteFunction("__SetVendingMachine", "ii", i, SS_VendingMachineObject[i]);
+	}
+}
+
+stock Float:SS_GetDistanceBetweenPoints(Float:x1,Float:y1,Float:z1,Float:x2,Float:y2,Float:z2)
+{
+	return floatadd(floatadd(floatsqroot(floatpower(floatsub(x1, x2), 2)), floatsqroot(floatpower(floatsub(y1, y2), 2))), floatsqroot(floatpower(floatsub(z1, z2), 2)));
+}
+
+stock SS_RemoveBuildingForPlayer(playerid, modelid, Float:fX, Float:fY, Float:fZ, Float:fRadius)
+{
+    if (playerid < 0 || playerid >= MAX_PLAYERS)
+	{
+		return false;
+	}
+	
+	for (new i, j = sizeof(SS_VendingMachine); i < j; i++)
+	{
+	    if (modelid == SS_VendingMachine[i][SS_vmModel])
+	    {
+		    if (SS_GetDistanceBetweenPoints(fX, fY, 0.0, SS_VendingMachine[i][SS_vmPosX], SS_VendingMachine[i][SS_vmPosY], 0.0) <= fRadius)
+		    {
+		        #if defined STREAMER_TYPE_OBJECT
+				    if (IsValidDynamicObject(SS_VendingMachineObject[i]))
+				    {
+				        DestroyDynamicObject(SS_VendingMachineObject[i]);
+				        return true;
+				    }
+				#else
+				    if (IsValidObject(SS_VendingMachineObject[i]))
+				    {
+				        DestroyObject(SS_VendingMachineObject[i]);
+				        return true;
+				    }
+				#endif
+				
+				break;
+		    }
+ 		}
+	}
+
+	return RemoveBuildingForPlayer(playerid, modelid, fX, fY, fZ, fRadius);
+}
+#if defined _ALS_RemoveBuildingForPlayer
+    #undef RemoveBuildingForPlayer
+#else
+	native OLD_RemoveBuildingForPlayer(playerid, modelid, Float:fX, Float:fY, Float:fZ, Float:fRadius) = RemoveBuildingForPlayer;
+    #define _ALS_RemoveBuildingForPlayer
+#endif
+#define RemoveBuildingForPlayer SS_RemoveBuildingForPlayer
 
 forward __SetPlayerTeam(playerid, teamid);
 public 	__SetPlayerTeam(playerid, teamid)
@@ -782,6 +862,19 @@ stock SS_SetSpawnInfo(playerid, team, skin, Float:x, Float:y, Float:z, Float:rot
 
 public OnPlayerConnect(playerid)
 {
+    RemoveBuildingForPlayer(playerid, 955, 0.0, 0.0, 0.0, 20000.0); // CJ_EXT_SPRUNK
+	RemoveBuildingForPlayer(playerid, 956, 0.0, 0.0, 0.0, 20000.0); // CJ_EXT_CANDY
+	RemoveBuildingForPlayer(playerid, 1209, 0.0, 0.0, 0.0, 20000.0); // vendmach
+	RemoveBuildingForPlayer(playerid, 1302, 0.0, 0.0, 0.0, 20000.0); // vendmachfd
+	RemoveBuildingForPlayer(playerid, 1775, 0.0, 0.0, 0.0, 20000.0); // CJ_SPRUNK1
+	RemoveBuildingForPlayer(playerid, 1776, 0.0, 0.0, 0.0, 20000.0); // CJ_CANDYVENDOR
+	RemoveBuildingForPlayer(playerid, 1977, 0.0, 0.0, 0.0, 20000.0); // vendin3
+	for (new i, j = sizeof(SS_VendingMachine); i < j; i++)
+	{
+		RemoveBuildingForPlayer(playerid, SS_VendingMachine[i][SS_vmModel], SS_VendingMachine[i][SS_vmPosX], SS_VendingMachine[i][SS_vmPosY], SS_VendingMachine[i][SS_vmPosZ], 1.0);
+	}
+	SS_VendingMachineTimer[playerid] = 0;
+
 	SS_Health[playerid] = 100.0;
 	SS_Armour[playerid] = 0.0;
 	SS_Money[playerid] = 0;
@@ -1167,21 +1260,54 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY
 					new Float:health;
 					GetVehicleHealth(hitid, health);
 
-					if (WEAPON_SHOTGUN <= weaponid <= WEAPON_SHOTGSPA)
+                    // Set final amount
+					switch (weaponid)
 					{
-						health -= 120.0;
-					}
-					else
-					{
-						health -= SS_WeaponDamage[weaponid] * 3.0;
+						case WEAPON_MOLTOV,
+							 WEAPON_COLT45..WEAPON_DEAGLE,
+							 WEAPON_UZI..WEAPON_SNIPER,
+							 WEAPON_MINIGUN,
+							 WEAPON_PISTOLWHIP,
+							 WEAPON_VEHICLE,
+							 WEAPON_HELIBLADES:
+						{
+						    health -= SS_WeaponDamage[weaponid] * 3.0;
+						}
+
+						case WEAPON_SHOTGSPA:
+					 	{
+							GetVehiclePos(hitid, x, y, z);
+
+							new Float:distance;
+							distance = SS_GetDistanceBetweenPoints(fX, fZ, fY, x, y, z);
+
+							new Float:bullets;
+							bullets = 15 / distance;
+
+					 	    health -= (SS_WeaponDamage[weaponid] * bullets) * 3.0;
+						}
+
+						case WEAPON_SHOTGUN,
+							 WEAPON_SAWEDOFF:
+					 	{
+							GetVehiclePos(hitid, x, y, z);
+
+							new Float:distance;
+							distance = SS_GetDistanceBetweenPoints(fX, fZ, fY, x, y, z);
+
+							new Float:bullets;
+							bullets = 8 / distance;
+
+					 	    health -= (SS_WeaponDamage[weaponid] * bullets) * 3.0;
+						}
 					}
 
 					if (health <= 0.0)
 					{
 						health = 0.0;
 					}
-
 					SetVehicleHealth(hitid, health);
+					
 					return 0;
 				}
 			}
@@ -1350,10 +1476,10 @@ stock static bool:SS_ProcessDamage(&playerid, &issuerid, &Float:amount, &weaponi
 		}
 	}
 
+	new Float:distance;
 	// Check for valid range shots
 	if (issuerid != INVALID_PLAYER_ID)
 	{
-		new Float:distance;
 		if (SS_WeaponRange[weaponid] != 0.0)
 		{
 			new Float:x, Float:y, Float:z;
@@ -1440,148 +1566,31 @@ stock static bool:SS_ProcessDamage(&playerid, &issuerid, &Float:amount, &weaponi
 		}
 	}
 
-	switch (weaponid)
-	{
-	    case WEAPON_EXPLOSION:
-	    {
-	        // Explosions do at most 82.5 damage. This will later be multipled by the damage value
-			amount /= 82.5;
-	    }
-
-		case WEAPON_COLLISION:
-		{
-		    // Collision damage is never greater than 165
-			if (amount > 165.0)
-			{
-				amount = 1.0;
-			}
-			else
-			{
-				amount /= 165.0;
-			}
-		}
-
-		case WEAPON_DROWN:
-		{
-		    // Drowing can max cause -10.0 health
-		    if (amount > 10.0)
-			{
-				amount = 10.0;
-			}
-		}
-	}
-
-	// Adjust damage for shotguns
-	new Float:bullets;
-	switch (weaponid)
-	{
-		// The spas shotguns shoot 8 bullets, each inflicting 4.95 damage
-		case WEAPON_SHOTGSPA:
-		{
-			bullets = amount / 4.950000286102294921875;
-
-			if (8.0 - bullets < -0.05)
-			{
-				return false;
-			}
-		}
-
-		// Shotguns and sawed-off shotguns shoot 15 bullets, each inflicting 3.3 damage
-		case WEAPON_SHOTGUN, WEAPON_SAWEDOFF:
-		{
-			bullets = amount / 3.30000019073486328125;
-
-			if (15.0 - bullets < -0.05)
-			{
-				return false;
-			}
-		}
-	}
-
-	if (_:bullets)
-	{
-		new Float:f = floatfract(bullets);
-
-		// The damage for each bullet has been tampered with
-		if (f > 0.01 && f < 0.99)
-		{
-			return false;
-		}
-
-		// Divide the damage amount by the number of bullets
-		amount /= bullets;
-	}
-
-	// Set amount for high rate weapons below or equal to 1.
-	switch (weaponid)
-	{
-		case WEAPON_FLAMETHROWER, WEAPON_DROWN, WEAPON_CARPARK, WEAPON_SPRAYCAN, WEAPON_FIREEXTINGUISHER:
-	 	{
-			if (amount > 1.0)
-			{
-				amount = 1.0;
-			}
-		}
-	}
-
-	// If the amount is not greater default damage
-	new Float:def_amount = 0.0;
-	switch (weaponid)
-	{
-		case WEAPON_COLT45, WEAPON_MP5:
-		{
-			def_amount = 8.25;
-		}
-		case WEAPON_SILENCED:
-		{
-			def_amount = 13.200000762939453125;
-		}
-		case WEAPON_DEAGLE:
-		{
-			def_amount = 46.200000762939453125;
-		}
-		case WEAPON_UZI, WEAPON_TEC9:
-		{
-			def_amount = 6.6000003814697265625;
-		}
-		case WEAPON_AK47, WEAPON_M4, WEAPON_VEHICLE_M4:
-		{
-			def_amount = 9.90000057220458984375;
-		}
-		case WEAPON_RIFLE:
-		{
-			def_amount = 24.7500019073486328125;
-		}
-		case WEAPON_SNIPER:
-		{
-			def_amount = 41.25;
-		}
-		case WEAPON_MINIGUN, WEAPON_VEHICLE_MINIGUN:
-		{
-			def_amount = 46.200000762939453125;
-		}
-		case WEAPON_VEHICLE:
-		{
-			def_amount = 9.90000057220458984375;
-		}
-	}
-	if (_:def_amount && _:def_amount != _:amount)
-	{
-  		return false;
-	}
-
 	// Set final amount
 	switch (weaponid)
 	{
-	    case WEAPON_UNARMED..WEAPON_GRENADE,
-			 WEAPON_ROCKETLAUNCHER..WEAPON_FLAMETHROWER,
-			 WEAPON_SATCHEL,
+	    case WEAPON_DROWN,
+			 WEAPON_COLLISION,
 			 WEAPON_EXPLOSION,
-			 WEAPON_COLLISION:
+			 WEAPON_FLAMETHROWER,
+			 WEAPON_CARPARK,
+			 WEAPON_SPRAYCAN,
+			 WEAPON_FIREEXTINGUISHER:
+	    {
+	    	if (amount > SS_WeaponDamage[weaponid])
+			{
+				amount = SS_WeaponDamage[weaponid];
+			}
+	    }
+
+		case WEAPON_GRENADE,
+			 WEAPON_ROCKETLAUNCHER,
+			 WEAPON_HEATSEEKER,
+			 WEAPON_SATCHEL:
 		{
-		    if (_:SS_WeaponDamage[weaponid] != _:1.0)
-		    {
-		    	amount *= SS_WeaponDamage[weaponid];
+			if (amount > SS_WeaponDamage[weaponid])
+			{
+		    	amount = SS_WeaponDamage[weaponid] / distance;
 		    }
 		}
 
@@ -1589,14 +1598,45 @@ stock static bool:SS_ProcessDamage(&playerid, &issuerid, &Float:amount, &weaponi
 			 WEAPON_COLT45..WEAPON_DEAGLE,
 			 WEAPON_UZI..WEAPON_SNIPER,
 			 WEAPON_MINIGUN,
-			 WEAPON_SPRAYCAN, WEAPON_FIREEXTINGUISHER,
-			 WEAPON_PISTOLWHIP, WEAPON_VEHICLE, WEAPON_HELIBLADES:
+			 WEAPON_PISTOLWHIP,
+			 WEAPON_VEHICLE,
+			 WEAPON_HELIBLADES:
 		{
 		    amount = SS_WeaponDamage[weaponid];
 		}
 
-		case WEAPON_SHOTGUN..WEAPON_SHOTGSPA:
+		case WEAPON_SHOTGSPA:
 	 	{
+	 	    new Float:bullets = amount / 4.950000286102294921875;
+			if (8.0 - bullets < -0.05)
+			{
+				return false;
+			}
+
+			new Float:f = floatfract(bullets);
+			if (f > 0.01 && f < 0.99)
+			{
+				return false;
+			}
+
+	 	    amount = SS_WeaponDamage[weaponid] * bullets;
+		}
+
+		case WEAPON_SHOTGUN,
+			 WEAPON_SAWEDOFF:
+	 	{
+	 	    new Float:bullets = amount / 3.30000019073486328125;
+			if (15.0 - bullets < -0.05)
+			{
+				return false;
+			}
+
+			new Float:f = floatfract(bullets);
+			if (f > 0.01 && f < 0.99)
+			{
+				return false;
+			}
+
 	 	    amount = SS_WeaponDamage[weaponid] * bullets;
 		}
 	}
@@ -2009,47 +2049,82 @@ public OnPlayerUpdate(playerid)
 #if ! defined KEY_AIM
 	#define KEY_AIM (128)
 #endif
-#if ! defined HOLDING
-	#define HOLDING(%0) ((newkeys & (%0)) == (%0))
-#endif
 #if ! defined PRESSED
 	#define PRESSED(%0) (((newkeys & (%0)) == (%0)) && ((oldkeys & (%0)) != (%0)))
+#endif
+/*
+#if ! defined HOLDING
+	#define HOLDING(%0) ((newkeys & (%0)) == (%0))
 #endif
 #if ! defined RELEASED
 	#define RELEASED(%0) (((newkeys & (%0)) != (%0)) && ((oldkeys & (%0)) == (%0)))
 #endif
+*/
 public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 {
-	// Store player last explosive used
     if (GetPlayerState(playerid) == PLAYER_STATE_ONFOOT)
 	{
-	    #if ! defined NO_VENDING_MACHINES
-		    // Detecting usage of vending machine
+	    if (SS_Update[playerid])
+	    {
 		    if (PRESSED(KEY_SECONDARY_ATTACK))
 		    {
-			    if (GetPlayerAnimationIndex(playerid) != 1660 && SS_Money[playerid] > 0 && GetPVarType(playerid, "SS_Vending") == PLAYER_VARTYPE_NONE)
+			    if (GetPlayerAnimationIndex(playerid) != 1660 && ! SS_VendingMachineTimer[playerid])
 				{
 		  			new interiorid = GetPlayerInterior(playerid);
+		  			
+					new Float:z;
+                   	GetPlayerPos(playerid, z, z, z);
+                   	
 					for (new i, j = sizeof(SS_VendingMachine); i < j; i++)
 					{
-						if (interiorid != SS_VendingMachine[i][SS_vmInteriorid])
+					    #if defined STREAMER_TYPE_OBJECT
+						    if (IsValidDynamicObject(SS_VendingMachineObject[i]))
+						    {
+						        continue;
+						    }
+						#else
+						    if (IsValidObject(SS_VendingMachineObject[i]))
+						    {
+						        continue;
+						    }
+						#endif
+					    
+						if (interiorid != SS_VendingMachine[i][SS_vmInterior])
 		    			{
 						    continue;
 						}
 
-						if (! IsPlayerInRangeOfPoint(playerid, 1.0, SS_VendingMachine[i][SS_vmFrontX], SS_VendingMachine[i][SS_vmFrontY], SS_VendingMachine[i][SS_vmZHeight]))
+						if (! IsPlayerInRangeOfPoint(playerid, 0.5, SS_VendingMachine[i][SS_vmFrontX], SS_VendingMachine[i][SS_vmFrontY], z))
+						{
+							continue;
+						}
+						
+						if (floatabs(z - SS_VendingMachine[i][SS_vmPosZ]) > 1.5)
 						{
 							continue;
 						}
 
-						SetPVarInt(playerid, "SS_Vending", SetTimerEx("OnPlayerUseVendingMachine", 2600, false, "i", playerid));
+					    if (SS_Money[playerid] <= 0)
+					    {
+					        PlayerPlaySound(playerid, 1055, 0.0, 0.0, 0.0);
+					        break;
+					    }
+
+						SetPlayerPos(playerid, SS_VendingMachine[i][SS_vmFrontX], SS_VendingMachine[i][SS_vmFrontY], z);
+                    	SetPlayerFacingAngle(playerid, SS_VendingMachine[i][SS_vmRotZ]);
+                    	
+                        ApplyAnimation(playerid, "VENDING", "VEND_USE", 4.1, 0, 0, 1, 0, 0, 1);
+                        
+                        PlayerPlaySound(playerid, 42600, 0.0, 0.0, 0.0);
+
+						SS_VendingMachineTimer[playerid] = SetTimerEx("OnPlayerUseVendingMachine", 2500, false, "i", playerid);
 						GivePlayerMoney(playerid, -1);
 
 						break;
 					}
 				}
 			}
-		#endif
+		}
 
 		if (newkeys & KEY_FIRE)
 		{
@@ -2088,18 +2163,15 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 	forward SS_OnPlayerKeyStateChange(playerid, newkeys, oldkeys);
 #endif
 
-#if ! defined NO_VENDING_MACHINES
-	forward OnPlayerUseVendingMachine(playerid);
-	public  OnPlayerUseVendingMachine(playerid)
+forward OnPlayerUseVendingMachine(playerid);
+public  OnPlayerUseVendingMachine(playerid)
+{
+	if (SS_Health[playerid] < 100.0)
 	{
-		if (SS_Health[playerid] < 100.0)
-		{
-		    SetPlayerHealth(playerid, (100.0 - SS_Health[playerid] >= 35.0) ? (SS_Health[playerid] + 35.0) : (SS_Health[playerid] + (100.0 - SS_Health[playerid])));
-	 	}
-
-		DeletePVar(playerid, "SS_Vending");
-	}
-#endif
+	    SetPlayerHealth(playerid, (100.0 - SS_Health[playerid] >= 35.0) ? (SS_Health[playerid] + 35.0) : (SS_Health[playerid] + (100.0 - SS_Health[playerid])));
+ 	}
+	SS_VendingMachineTimer[playerid] = 0;
+}
 
 stock static SS_GetModelWeaponID(weaponid)
 {
@@ -2276,49 +2348,77 @@ public OnPlayerPickUpPickup(playerid, pickupid)
 
        		switch (weapon)
 		    {
-		        case WEAPON_BRASSKNUCKLE..WEAPON_CANE, 44, 45, WEAPON_PARACHUTE:
+		        case WEAPON_BRASSKNUCKLE..WEAPON_CANE, WEAPON_PARACHUTE:
 		        {
     				SS_WeaponData[playerid][slot][1] += 1;
 		        }
-		        case WEAPON_GRENADE..WEAPON_MOLTOV, WEAPON_SATCHEL:
+		        case WEAPON_GRENADE..WEAPON_MOLTOV:
 		        {
-    				SS_WeaponData[playerid][slot][1] += 2;
+    				SS_WeaponData[playerid][slot][1] += 8;
 		        }
-		        case WEAPON_COLT45..WEAPON_DEAGLE:
+		        case WEAPON_COLT45:
 		        {
-    				SS_WeaponData[playerid][slot][1] += 100;
+    				SS_WeaponData[playerid][slot][1] += 30;
 		        }
-		        case WEAPON_SHOTGUN..WEAPON_SHOTGSPA:
+				case WEAPON_SILENCED, WEAPON_DEAGLE:
 		        {
-    				SS_WeaponData[playerid][slot][1] += 100;
+    				SS_WeaponData[playerid][slot][1] += 10;
+		        }
+		        case WEAPON_SHOTGUN:
+		        {
+    				SS_WeaponData[playerid][slot][1] += 15;
+		        }
+		        case WEAPON_SAWEDOFF, WEAPON_SHOTGSPA:
+		        {
+    				SS_WeaponData[playerid][slot][1] += 10;
 		        }
 		        case WEAPON_UZI, WEAPON_MP5, WEAPON_TEC9:
 		        {
-    				SS_WeaponData[playerid][slot][1] += 200;
+    				SS_WeaponData[playerid][slot][1] += 60;
 		        }
 		        case WEAPON_AK47, WEAPON_M4:
 		        {
-    				SS_WeaponData[playerid][slot][1] += 100;
+    				SS_WeaponData[playerid][slot][1] += 80;
 		        }
-		        case WEAPON_RIFLE, WEAPON_SNIPER:
+		        case WEAPON_RIFLE:
 		        {
-    				SS_WeaponData[playerid][slot][1] += 100;
+    				SS_WeaponData[playerid][slot][1] += 20;
 		        }
-		        case WEAPON_ROCKETLAUNCHER, WEAPON_HEATSEEKER:
+		        case WEAPON_SNIPER:
 		        {
-    				SS_WeaponData[playerid][slot][1] += 2;
+    				SS_WeaponData[playerid][slot][1] += 10;
+		        }
+		        case WEAPON_ROCKETLAUNCHER:
+		        {
+    				SS_WeaponData[playerid][slot][1] += 4;
+		        }
+		        case WEAPON_HEATSEEKER:
+		        {
+    				SS_WeaponData[playerid][slot][1] += 3;
 		        }
 		        case WEAPON_FLAMETHROWER:
 		        {
-    				SS_WeaponData[playerid][slot][1] += 500;
+    				SS_WeaponData[playerid][slot][1] += 100;
 		        }
 		        case WEAPON_MINIGUN:
 		        {
-    				SS_WeaponData[playerid][slot][1] += 100;
+    				SS_WeaponData[playerid][slot][1] += 500;
 		        }
-		        case WEAPON_SPRAYCAN, WEAPON_FIREEXTINGUISHER, WEAPON_CAMERA:
+		        case WEAPON_SATCHEL:
+		        {
+    				SS_WeaponData[playerid][slot][1] += 5;
+		        }
+		        case WEAPON_SPRAYCAN:
+		        {
+    				SS_WeaponData[playerid][slot][1] += 500;
+		        }
+		        case WEAPON_FIREEXTINGUISHER:
 		        {
     				SS_WeaponData[playerid][slot][1] += 100;
+		        }
+		        case WEAPON_CAMERA:
+		        {
+    				SS_WeaponData[playerid][slot][1] += 36;
 		        }
 		    }
 

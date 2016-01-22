@@ -4,7 +4,7 @@
 #define _serversided_included
 
 /*
-*
+* 
 * ===============
 * LIBRARY
 * ===============
@@ -12,11 +12,17 @@
 * Makes all the client side features to server scripted parts (covers Health, Armour, Money, Weapon, Ammo and Vehicle Health).
 *
 * ===============
+* Updates (SecretBoss's Fork)
+* ===============
+* This fork is made to fix a critical bug with OnPlayerDeath callback (Suicide detection)
+*
+* ===============
 * CREDITS
 * ===============
-* Gammix - Include creator
+* Gammix - Include creator (Fork by SecretBoss)
 * Slice - Damage processing function, weapons array and average hit/shoot functions to catch rapid fire
 * SecretBoss - Testing the include
+*
 *
 */
 
@@ -28,6 +34,10 @@
 #define WEAPON_EXPLOSION 		51
 #define WEAPON_CARPARK 			52
 #define WEAPON_UNKNOWN 			55
+
+// Variables to handle death (fork)
+static bool:__diedServerSided[MAX_PLAYERS] = false;
+static __serverSidedCount[MAX_PLAYERS];
 
 enum e_SS_VENDING_MACHINE
 {
@@ -1833,9 +1843,23 @@ public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
 	else
 	{
 	    if (amount >= SS_Armour[playerid] + SS_Health[playerid])
-	    {
-		    SetPlayerArmour(playerid, 0.0);
-	    	SetPlayerHealth(playerid, 0.0);
+	    {	
+			// Get current time
+			new currenttime = gettime();
+			// Check if 2 seconds passed so it won't send double kill
+			if(currenttime > (__serverSidedCount[playerid] + 2))
+			{			
+				// Kill the player
+				SetPlayerArmour(playerid, 0.0);
+				SetPlayerHealth(playerid, 0.0);
+
+				// Reset variables
+				__diedServerSided[playerid] = true;
+				__serverSidedCount[playerid] = gettime();
+				
+				// Call the death
+				CallLocalFunction("OnPlayerDeath", "iii", playerid, issuerid, weaponid);
+			}
 	    }
 	    else
 	    {
@@ -1894,6 +1918,17 @@ public  SS_OnPlayerKnifeComplete(playerid, killerid)
 
 public OnPlayerDeath(playerid, killerid, reason)
 {
+	// Get current time
+	new currenttime = gettime();
+	// Check if player died server sided
+	if(reason == 255 && __diedServerSided[playerid] && currenttime < (__serverSidedCount[playerid] + 2))
+	{
+		// Reset variables
+	    __diedServerSided[playerid] = false;
+		// Stop onplayerdeath session
+	    return 1;
+	}
+
 	SS_Health[playerid] = 0.0;
 	SS_Armour[playerid] = 0.0;
 
